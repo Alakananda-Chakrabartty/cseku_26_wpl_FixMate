@@ -1,4 +1,4 @@
-# 🛠️ Local Services Marketplace
+# 🛠️ FixMate
 
 > **Find a trusted service provider near you.**
 
