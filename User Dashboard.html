@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FixMate — Dashboard (Wireframe)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  .ph-block { background-image: repeating-linear-gradient(45deg, #e2e8f0 0, #e2e8f0 1px, transparent 1px, transparent 8px); }
+</style>
+</head>
+<body class="bg-slate-50 text-slate-700 antialiased">
+
+  <div class="flex min-h-screen max-w-[1440px] mx-auto">
+
+    <!-- ============ SIDEBAR ============ -->
+    <aside class="hidden lg:flex flex-col w-64 shrink-0 bg-white border-r border-slate-200 h-screen sticky top-0">
+      <div class="flex items-center gap-2 px-6 h-16 border-b border-slate-200">
+        <div class="w-8 h-8 rounded-md bg-slate-900 flex items-center justify-center text-white">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+        </div>
+        <span class="text-base font-semibold text-slate-900">FixMate</span>
+      </div>
+
+      <nav class="flex-1 px-4 py-6 space-y-1 text-sm font-medium">
+        <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-md bg-slate-900 text-white">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+          Dashboard
+        </a>
+        <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-md text-slate-500 hover:bg-slate-100">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          Bookings
+        </a>
+        <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-md text-slate-500 hover:bg-slate-100">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Providers
+        </a>
+        <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-md text-slate-500 hover:bg-slate-100">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Messages
+        </a>
+        <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-md text-slate-500 hover:bg-slate-100">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17.3 6.2 21l1.6-6.6L2 9.8l6.7-.6L12 3l3.3 6.2 6.7.6-5.8 4.6 1.6 6.6z"/></svg>
+          Reviews
+        </a>
+
+        <p class="px-3 pt-6 pb-2 text-xs font-semibold text-slate-400 uppercase tracking-wide">Account</p>
+        <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-md text-slate-500 hover:bg-slate-100">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Settings
+        </a>
+        <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-md text-slate-500 hover:bg-slate-100">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+          Log Out
+        </a>
+      </nav>
+
+      <div class="px-4 py-4 border-t border-slate-200 flex items-center gap-3">
+        <div class="w-9 h-9 rounded-full bg-slate-200 ph-block border border-slate-300 shrink-0"></div>
+        <div class="leading-tight overflow-hidden">
+          <p class="text-sm font-medium text-slate-900 truncate">Nayon Mondol</p>
+          <p class="text-xs text-slate-400 truncate">nayon@fixmate.com</p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ============ MAIN ============ -->
+    <div class="flex-1 flex flex-col min-w-0">
+
+      <!-- Top bar -->
+      <header class="sticky top-0 z-20 bg-white border-b border-slate-200">
+        <div class="flex items-center justify-between h-16 px-6">
+          <div class="flex items-center gap-3">
+            <label for="mobile-menu" class="lg:hidden p-2 rounded-md border border-slate-200 text-slate-500 cursor-pointer">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </label>
+            <h1 class="text-lg font-semibold text-slate-900">Dashboard</h1>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="hidden sm:flex items-center gap-2 border border-slate-300 rounded-md px-3 py-2 w-64">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              <input type="text" placeholder="Search..." class="w-full text-sm outline-none placeholder:text-slate-400" />
+            </div>
+            <button class="relative p-2 rounded-md border border-slate-200 text-slate-500 hover:bg-slate-100">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+              <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-slate-900 rounded-full border-2 border-white"></span>
+            </button>
+            <div class="w-9 h-9 rounded-full bg-slate-200 ph-block border border-slate-300"></div>
+          </div>
+        </div>
+      </header>
+
+      <main class="flex-1 px-6 py-8">
+
+        <!-- Greeting -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <div>
+            <h2 class="text-2xl font-semibold text-slate-900">Welcome back, Nayon</h2>
+            <p class="text-sm text-slate-500 mt-1">Here's what's happening with your bookings today.</p>
+          </div>
+          <button class="inline-flex items-center justify-center gap-2 bg-slate-900 text-white text-sm font-medium px-4 py-2.5 rounded-md hover:bg-slate-800 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+            New Booking
+          </button>
+        </div>
+
+        <!-- Stat Cards -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+
+          <div class="bg-white border border-slate-200 rounded-lg p-5">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-medium text-slate-500 uppercase tracking-wide">Active Bookings</span>
+              <div class="w-8 h-8 rounded-md bg-slate-100 flex items-center justify-center text-slate-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+              </div>
+            </div>
+            <p class="text-2xl font-semibold text-slate-900">3</p>
+            <p class="text-xs text-slate-400 mt-1">2 awaiting confirmation</p>
+          </div>
+
+          <div class="bg-white border border-slate-200 rounded-lg p-5">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-medium text-slate-500 uppercase tracking-wide">Completed Jobs</span>
+              <div class="w-8 h-8 rounded-md bg-slate-100 flex items-center justify-center text-slate-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+              </div>
+            </div>
+            <p class="text-2xl font-semibold text-slate-900">27</p>
+            <p class="text-xs text-slate-400 mt-1">Since March 2026</p>
+          </div>
+
+          <div class="bg-white border border-slate-200 rounded-lg p-5">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-medium text-slate-500 uppercase tracking-wide">Saved Providers</span>
+              <div class="w-8 h-8 rounded-md bg-slate-100 flex items-center justify-center text-slate-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+              </div>
+            </div>
+            <p class="text-2xl font-semibold text-slate-900">8</p>
+            <p class="text-xs text-slate-400 mt-1">Across 5 categories</p>
+          </div>
+
+          <div class="bg-white border border-slate-200 rounded-lg p-5">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-medium text-slate-500 uppercase tracking-wide">Pending Reviews</span>
+              <div class="w-8 h-8 rounded-md bg-slate-100 flex items-center justify-center text-slate-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17.3 6.2 21l1.6-6.6L2 9.8l6.7-.6L12 3l3.3 6.2 6.7.6-5.8 4.6 1.6 6.6z"/></svg>
+              </div>
+            </div>
+            <p class="text-2xl font-semibold text-slate-900">2</p>
+            <p class="text-xs text-slate-400 mt-1">Awaiting your rating</p>
+          </div>
+
+        </div>
+
+        <!-- Recent Activity Table -->
+        <div class="bg-white border border-slate-200 rounded-lg overflow-hidden">
+          <div class="flex items-center justify-between p-5 border-b border-slate-200">
+            <div>
+              <h3 class="text-sm font-semibold text-slate-900">Recent Activity</h3>
+              <p class="text-xs text-slate-400 mt-0.5">Your latest bookings and updates</p>
+            </div>
+            <a href="#" class="text-xs font-medium text-slate-500 hover:text-slate-900">View all →</a>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+              <thead>
+                <tr class="border-b border-slate-200 text-xs text-slate-400 uppercase tracking-wide">
+                  <th class="px-5 py-3 font-medium">Provider</th>
+                  <th class="px-5 py-3 font-medium">Category</th>
+                  <th class="px-5 py-3 font-medium">Date</th>
+                  <th class="px-5 py-3 font-medium">Price</th>
+                  <th class="px-5 py-3 font-medium">Status</th>
+                  <th class="px-5 py-3 font-medium text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+
+                <tr class="hover:bg-slate-50">
+                  <td class="px-5 py-4">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-full bg-slate-200 ph-block border border-slate-300 shrink-0"></div>
+                      <span class="font-medium text-slate-900">Rahim AC Service</span>
+                    </div>
+                  </td>
+                  <td class="px-5 py-4 text-slate-500">AC Technician</td>
+                  <td class="px-5 py-4 text-slate-500">Aug 24, 2026</td>
+                  <td class="px-5 py-4 text-slate-500">৳500</td>
+                  <td class="px-5 py-4"><span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-900 text-white">Confirmed</span></td>
+                  <td class="px-5 py-4 text-right"><button class="text-xs font-medium text-slate-500 hover:text-slate-900 border border-slate-300 rounded-md px-3 py-1.5">View</button></td>
+                </tr>
+
+                <tr class="hover:bg-slate-50">
+                  <td class="px-5 py-4">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-full bg-slate-200 ph-block border border-slate-300 shrink-0"></div>
+                      <span class="font-medium text-slate-900">CoolTech</span>
+                    </div>
+                  </td>
+                  <td class="px-5 py-4 text-slate-500">AC Technician</td>
+                  <td class="px-5 py-4 text-slate-500">Aug 22, 2026</td>
+                  <td class="px-5 py-4 text-slate-500">৳600</td>
+                  <td class="px-5 py-4"><span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-300">Pending</span></td>
+                  <td class="px-5 py-4 text-right"><button class="text-xs font-medium text-slate-500 hover:text-slate-900 border border-slate-300 rounded-md px-3 py-1.5">View</button></td>
+                </tr>
+
+                <tr class="hover:bg-slate-50">
+                  <td class="px-5 py-4">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-full bg-slate-200 ph-block border border-slate-300 shrink-0"></div>
+                      <span class="font-medium text-slate-900">Karim Electric Works</span>
+                    </div>
+                  </td>
+                  <td class="px-5 py-4 text-slate-500">Electrician</td>
+                  <td class="px-5 py-4 text-slate-500">Aug 19, 2026</td>
+                  <td class="px-5 py-4 text-slate-500">৳350</td>
+                  <td class="px-5 py-4"><span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-200 text-slate-700">Completed</span></td>
+                  <td class="px-5 py-4 text-right"><button class="text-xs font-medium text-slate-500 hover:text-slate-900 border border-slate-300 rounded-md px-3 py-1.5">Rate</button></td>
+                </tr>
+
+                <tr class="hover:bg-slate-50">
+                  <td class="px-5 py-4">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-full bg-slate-200 ph-block border border-slate-300 shrink-0"></div>
+                      <span class="font-medium text-slate-900">Fahim's Plumbing</span>
+                    </div>
+                  </td>
+                  <td class="px-5 py-4 text-slate-500">Plumber</td>
+                  <td class="px-5 py-4 text-slate-500">Aug 15, 2026</td>
+                  <td class="px-5 py-4 text-slate-500">৳450</td>
+                  <td class="px-5 py-4"><span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-200 text-slate-700">Completed</span></td>
+                  <td class="px-5 py-4 text-right"><button class="text-xs font-medium text-slate-500 hover:text-slate-900 border border-slate-300 rounded-md px-3 py-1.5">Rate</button></td>
+                </tr>
+
+              </tbody>
+            </table>
+          </div>
+
+          <div class="flex items-center justify-between p-5 border-t border-slate-200">
+            <p class="text-xs text-slate-400">Page 1 of 6</p>
+            <div class="flex items-center gap-2">
+              <button class="text-xs font-medium text-slate-400 border border-slate-200 rounded-md px-3 py-1.5 cursor-not-allowed">Previous</button>
+              <button class="text-xs font-medium text-slate-600 border border-slate-300 rounded-md px-3 py-1.5 hover:bg-slate-50">Next</button>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+</body>
+</html>
