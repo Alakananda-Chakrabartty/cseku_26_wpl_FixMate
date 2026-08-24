@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FixMate – Super Admin Console</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased font-sans min-h-screen flex">
+  
+  <!-- Sidebar Navigation -->
+  <aside class="w-64 bg-slate-900 text-slate-300 p-6 space-y-8 hidden md:flex flex-col flex-shrink-0">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 bg-rose-500 rounded-xl flex items-center justify-center font-black text-white text-lg shadow-md">F</div>
+      <div>
+        <span class="font-bold tracking-tight text-white text-base block">FixMate</span>
+        <span class="text-[10px] font-bold text-rose-400 tracking-wider uppercase">Admin Control</span>
+      </div>
+    </div>
+    
+    <nav class="space-y-1.5 text-sm flex-1">
+      <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-rose-600 text-white font-semibold shadow-sm">
+        <span>📊</span> Dashboard Overview
+      </a>
+      <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-slate-400 hover:text-slate-200">
+        <span>👥</span> User Management
+      </a>
+      <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-slate-400 hover:text-slate-200">
+        <span>🛠️</span> Provider Approvals
+        <span class="ml-auto bg-amber-500/20 text-amber-400 text-xs px-2 py-0.5 rounded-full font-bold">5 Pending</span>
+      </a>
+      <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-slate-400 hover:text-slate-200">
+        <span>💰</span> Transactions & Fees
+      </a>
+      <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-slate-400 hover:text-slate-200">
+        <span>⚠️</span> Dispute Resolution
+      </a>
+      <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-slate-400 hover:text-slate-200">
+        <span>⚙️</span> System Settings
+      </a>
+    </nav>
+
+    <div class="pt-4 border-t border-slate-800 flex items-center gap-3">
+      <div class="w-9 h-9 rounded-full bg-slate-700 font-bold flex items-center justify-center text-xs text-slate-300">AD</div>
+      <div class="text-xs">
+        <p class="font-bold text-slate-200">System Owner</p>
+        <p class="text-slate-500">admin@fixmate.com</p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main class="flex-1 p-6 md:p-8 space-y-8 overflow-y-auto">
+    
+    <!-- Top Bar -->
+    <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b border-slate-200 pb-5">
+      <div>
+        <h1 class="text-2xl font-bold text-slate-900">Platform Analytics & Governance</h1>
+        <p class="text-xs text-slate-500">Real-time system health, revenue streams, and verification queues.</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <button class="px-4 py-2 bg-slate-200 hover:bg-slate-300 font-semibold text-xs rounded-xl text-slate-700 transition-all">Export Reports</button>
+        <button class="px-4 py-2 bg-rose-600 hover:bg-rose-700 font-semibold text-xs rounded-xl text-white shadow-md transition-all">+ Add New Admin</button>
+      </div>
+    </div>
+
+    <!-- Platform Stats Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Platform Revenue</span>
+        <div class="flex items-baseline gap-2">
+          <h3 class="text-2xl font-black text-slate-900">$24,850</h3>
+          <span class="text-xs font-bold text-emerald-600">+14.2%</span>
+        </div>
+        <p class="text-[11px] text-slate-400">10% commission on 1,420 bookings</p>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Active Customers</span>
+        <div class="flex items-baseline gap-2">
+          <h3 class="text-2xl font-black text-slate-900">3,840</h3>
+          <span class="text-xs font-bold text-emerald-600">+8.1%</span>
+        </div>
+        <p class="text-[11px] text-slate-400">Registered service seekers</p>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Verified Technicians</span>
+        <div class="flex items-baseline gap-2">
+          <h3 class="text-2xl font-black text-slate-900">412</h3>
+          <span class="text-xs font-bold text-indigo-600">Across 8 categories</span>
+        </div>
+        <p class="text-[11px] text-slate-400">Active provider profiles</p>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Pending Approvals</span>
+        <div class="flex items-baseline gap-2">
+          <h3 class="text-2xl font-black text-amber-600">5</h3>
+          <span class="text-xs font-bold text-amber-600">Action Required</span>
+        </div>
+        <p class="text-[11px] text-slate-400">NID / Verification documents waiting</p>
+      </div>
+    </div>
+
+    <!-- Main Content Split Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Left Column: Verification Queue -->
+      <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-5 border-b border-slate-100 flex justify-between items-center">
+          <h3 class="font-bold text-slate-900 text-base">Provider Verification Queue</h3>
+          <a href="#" class="text-xs font-bold text-rose-600 hover:underline">View All Requests</a>
+        </div>
+        <div class="divide-y divide-slate-100">
+          
+          <!-- Queue Item 1 -->
+          <div class="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center font-bold text-slate-500 text-xs">ID</div>
+              <div>
+                <h4 class="font-bold text-slate-900 text-sm">Karim Electric Service</h4>
+                <p class="text-xs text-slate-500">Submitted: Electrician License & Trade Registry</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 w-full sm:w-auto">
+              <button class="flex-1 sm:flex-none px-3 py-1.5 bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-200">Review Docs</button>
+              <button class="flex-1 sm:flex-none px-3 py-1.5 bg-emerald-600 text-white text-xs font-semibold rounded-lg shadow-sm hover:bg-emerald-700">Approve</button>
+            </div>
+          </div>
+
+          <!-- Queue Item 2 -->
+          <div class="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center font-bold text-slate-500 text-xs">ID</div>
+              <div>
+                <h4 class="font-bold text-slate-900 text-sm">CleanHome Solution</h4>
+                <p class="text-xs text-slate-500">Submitted: Agency Registration & NID</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 w-full sm:w-auto">
+              <button class="flex-1 sm:flex-none px-3 py-1.5 bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-200">Review Docs</button>
+              <button class="flex-1 sm:flex-none px-3 py-1.5 bg-emerald-600 text-white text-xs font-semibold rounded-lg shadow-sm hover:bg-emerald-700">Approve</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Right Column: Recent System Logs & Actions -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+        <h3 class="font-bold text-slate-900 text-base border-b border-slate-100 pb-3">Recent Platform Activity</h3>
+        <div class="space-y-3 text-xs">
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1">
+            <span class="font-bold text-slate-800">Payout Disbursed</span>
+            <p class="text-slate-500">$340.00 transferred to Provider #108</p>
+            <span class="text-[10px] text-slate-400">10 mins ago</span>
+          </div>
+          <div class="p-3 bg-rose-50 rounded-xl border border-rose-100 space-y-1">
+            <span class="font-bold text-rose-800">Dispute Flagged</span>
+            <p class="text-rose-600">Booking #892 flagged by customer (Unfinished job)</p>
+            <span class="text-[10px] text-rose-400">45 mins ago</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+</body>
+</html>
