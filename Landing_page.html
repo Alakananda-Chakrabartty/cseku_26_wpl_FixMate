@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FixMate — Find Trusted Local Services</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          primary: '#4F46E5',
+          secondary: '#14B8A6',
+          bgsoft: '#F8FAFC'
+        },
+        fontFamily: {
+          heading: ['Poppins', 'sans-serif'],
+          body: ['Inter', 'sans-serif']
+        }
+      }
+    }
+  }
+</script>
+</head>
+<body class="bg-bgsoft text-slate-700 font-body antialiased">
+
+  <!-- ============ NAVBAR ============ -->
+  <header class="sticky top-0 z-40 bg-white/80 backdrop-blur-lg border-b border-slate-100">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+      <div class="flex items-center justify-between h-18 py-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white shadow-lg shadow-primary/30">
+            <i data-lucide="wrench" class="w-5 h-5"></i>
+          </div>
+          <span class="text-xl font-heading font-bold text-slate-900 tracking-tight">FixMate</span>
+        </div>
+
+        <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-500">
+          <a href="#" class="hover:text-primary transition-colors">Features</a>
+          <a href="#" class="hover:text-primary transition-colors">How it Works</a>
+          <a href="#" class="hover:text-primary transition-colors">Providers</a>
+          <a href="#" class="hover:text-primary transition-colors">Pricing</a>
+        </nav>
+
+        <div class="flex items-center gap-3">
+          <a href="#" class="hidden sm:inline-block text-sm font-semibold text-slate-600 hover:text-primary px-4 py-2 transition-colors">Log In</a>
+          <a href="#" class="inline-flex items-center gap-1.5 text-sm font-semibold bg-gradient-to-r from-primary to-indigo-600 text-white px-5 py-2.5 rounded-xl hover:shadow-lg hover:shadow-primary/40 hover:scale-[1.02] transition-all">
+            Sign Up Free <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ HERO ============ -->
+  <section class="relative overflow-hidden bg-gradient-to-br from-primary via-indigo-600 to-secondary">
+    <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(circle at 20% 20%, white 1px, transparent 1px); background-size: 32px 32px;"></div>
+    <div class="absolute -top-24 -right-24 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
+    <div class="absolute -bottom-32 -left-16 w-80 h-80 bg-secondary/30 rounded-full blur-3xl"></div>
+
+    <div class="relative max-w-7xl mx-auto px-6 lg:px-8 pt-20 pb-28 text-center">
+      <span class="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-white bg-white/15 backdrop-blur border border-white/25 rounded-full px-4 py-1.5 mb-6">
+        <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+        Local Services, Verified
+      </span>
+      <h1 class="text-4xl sm:text-5xl lg:text-6xl font-heading font-extrabold text-white leading-tight mb-6 max-w-3xl mx-auto">
+        Find a trusted service provider near you
+      </h1>
+      <p class="text-base sm:text-lg text-white/80 leading-relaxed mb-10 max-w-xl mx-auto">
+        Search verified electricians, plumbers, AC technicians, and more. Compare ratings, prices, and availability — then book and pay in minutes.
+      </p>
+
+      <!-- Search bar -->
+      <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-2xl shadow-indigo-900/30 p-2 flex flex-col sm:flex-row gap-2">
+        <div class="flex-1 flex items-center gap-2 px-4 py-3">
+          <i data-lucide="search" class="w-5 h-5 text-slate-400 shrink-0"></i>
+          <input type="text" placeholder="What service do you need?" class="w-full text-sm outline-none placeholder:text-slate-400" />
+        </div>
+        <div class="hidden sm:block w-px bg-slate-200 my-2"></div>
+        <div class="flex-1 flex items-center gap-2 px-4 py-3">
+          <i data-lucide="map-pin" class="w-5 h-5 text-slate-400 shrink-0"></i>
+          <input type="text" placeholder="Sonadanga, Khulna" class="w-full text-sm outline-none placeholder:text-slate-400" />
+        </div>
+        <button class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-secondary text-white text-sm font-semibold px-6 py-3.5 rounded-xl hover:scale-[1.02] transition-all shadow-lg shadow-primary/30">
+          <i data-lucide="search" class="w-4 h-4"></i> Search
+        </button>
+      </div>
+
+      <div class="flex items-center justify-center gap-6 mt-8 text-white/70 text-xs font-medium">
+        <span class="flex items-center gap-1.5"><i data-lucide="check-circle" class="w-4 h-4 text-secondary"></i> No credit card required</span>
+        <span class="flex items-center gap-1.5"><i data-lucide="check-circle" class="w-4 h-4 text-secondary"></i> Free to browse</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SOCIAL PROOF STRIP ============ -->
+  <section class="relative -mt-10">
+    <div class="max-w-5xl mx-auto px-6 lg:px-8">
+      <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/70 p-6 sm:p-8 grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
+        <div>
+          <p class="text-3xl font-heading font-extrabold text-primary">12K+</p>
+          <p class="text-xs text-slate-400 mt-1 font-medium">Verified Providers</p>
+        </div>
+        <div>
+          <p class="text-3xl font-heading font-extrabold text-secondary">48.5K+</p>
+          <p class="text-xs text-slate-400 mt-1 font-medium">Jobs Completed</p>
+        </div>
+        <div>
+          <p class="text-3xl font-heading font-extrabold text-amber-500">4.7 ★</p>
+          <p class="text-xs text-slate-400 mt-1 font-medium">Average Rating</p>
+        </div>
+        <div>
+          <p class="text-3xl font-heading font-extrabold text-rose-500">30+</p>
+          <p class="text-xs text-slate-400 mt-1 font-medium">Cities Covered</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SERVICE CATEGORIES ============ -->
+  <section class="max-w-7xl mx-auto px-6 lg:px-8 py-24">
+    <div class="text-center max-w-xl mx-auto mb-14">
+      <span class="text-xs font-bold uppercase tracking-widest text-primary">Browse Services</span>
+      <h2 class="text-3xl sm:text-4xl font-heading font-extrabold text-slate-900 mt-2 mb-3">Popular categories near you</h2>
+      <p class="text-sm text-slate-500">Tap a category to see verified, top-rated providers in your city.</p>
+    </div>
+
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-5">
+
+      <div class="group bg-white rounded-2xl border border-slate-100 shadow-md p-5 flex flex-col items-center text-center gap-3 hover:shadow-xl hover:shadow-amber-200/50 hover:scale-[1.04] hover:-translate-y-1 transition-all cursor-pointer">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white shadow-lg shadow-amber-300/50 group-hover:rotate-6 transition-transform">
+          <i data-lucide="zap" class="w-6 h-6"></i>
+        </div>
+        <span class="text-sm font-semibold text-slate-800">Electrician</span>
+        <span class="text-xs text-slate-400">1,240 pros</span>
+      </div>
+
+      <div class="group bg-white rounded-2xl border border-slate-100 shadow-md p-5 flex flex-col items-center text-center gap-3 hover:shadow-xl hover:shadow-cyan-200/50 hover:scale-[1.04] hover:-translate-y-1 transition-all cursor-pointer">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-400 to-teal-500 flex items-center justify-center text-white shadow-lg shadow-cyan-300/50 group-hover:rotate-6 transition-transform">
+          <i data-lucide="droplet" class="w-6 h-6"></i>
+        </div>
+        <span class="text-sm font-semibold text-slate-800">Plumber</span>
+        <span class="text-xs text-slate-400">980 pros</span>
+      </div>
+
+      <div class="group bg-white rounded-2xl border border-slate-100 shadow-md p-5 flex flex-col items-center text-center gap-3 hover:shadow-xl hover:shadow-sky-200/50 hover:scale-[1.04] hover:-translate-y-1 transition-all cursor-pointer">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-sky-400 to-blue-500 flex items-center justify-center text-white shadow-lg shadow-sky-300/50 group-hover:rotate-6 transition-transform">
+          <i data-lucide="wind" class="w-6 h-6"></i>
+        </div>
+        <span class="text-sm font-semibold text-slate-800">AC Technician</span>
+        <span class="text-xs text-slate-400">760 pros</span>
+      </div>
+
+      <div class="group bg-white rounded-2xl border border-slate-100 shadow-md p-5 flex flex-col items-center text-center gap-3 hover:shadow-xl hover:shadow-orange-200/50 hover:scale-[1.04] hover:-translate-y-1 transition-all cursor-pointer">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-white shadow-lg shadow-orange-300/50 group-hover:rotate-6 transition-transform">
+          <i data-lucide="car" class="w-6 h-6"></i>
+        </div>
+        <span class="text-sm font-semibold text-slate-800">Mechanic</span>
+        <span class="text-xs text-slate-400">540 pros</span>
+      </div>
+
+      <div class="group bg-white rounded-2xl border border-slate-100 shadow-md p-5 flex flex-col items-center text-center gap-3 hover:shadow-xl hover:shadow-emerald-200/50 hover:scale-[1.04] hover:-translate-y-1 transition-all cursor-pointer">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-green-500 flex items-center justify-center text-white shadow-lg shadow-emerald-300/50 group-hover:rotate-6 transition-transform">
+          <i data-lucide="sparkles" class="w-6 h-6"></i>
+        </div>
+        <span class="text-sm font-semibold text-slate-800">Cleaner</span>
+        <span class="text-xs text-slate-400">1,050 pros</span>
+      </div>
+
+      <div class="group bg-white rounded-2xl border border-slate-100 shadow-md p-5 flex flex-col items-center text-center gap-3 hover:shadow-xl hover:shadow-violet-200/50 hover:scale-[1.04] hover:-translate-y-1 transition-all cursor-pointer">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-violet-300/50 group-hover:rotate-6 transition-transform">
+          <i data-lucide="paintbrush" class="w-6 h-6"></i>
+        </div>
+        <span class="text-sm font-semibold text-slate-800">Painter</span>
+        <span class="text-xs text-slate-400">410 pros</span>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ FEATURED PROVIDERS ============ -->
+  <section class="bg-white border-y border-slate-100">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8 py-24">
+      <div class="flex items-end justify-between mb-10">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-widest text-secondary">Top Rated</span>
+          <h2 class="text-3xl font-heading font-extrabold text-slate-900 mt-2">Providers near Sonadanga</h2>
+        </div>
+        <a href="#" class="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:gap-2.5 transition-all">View all <i data-lucide="arrow-right" class="w-4 h-4"></i></a>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-md p-5 hover:shadow-xl hover:scale-[1.02] transition-all">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-sky-400 to-blue-500 flex items-center justify-center text-white font-heading font-bold">RS</div>
+            <div class="flex-1">
+              <p class="text-sm font-bold text-slate-900">Rahim AC Service</p>
+              <p class="text-xs text-slate-400">AC Technician</p>
+            </div>
+            <span class="inline-flex items-center gap-1 text-xs font-bold bg-emerald-50 text-emerald-600 px-2 py-1 rounded-full">
+              <i data-lucide="badge-check" class="w-3.5 h-3.5"></i> Verified
+            </span>
+          </div>
+          <div class="flex items-center gap-1 text-amber-400 mb-3">
+            <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+            <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+            <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+            <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+            <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+            <span class="text-xs font-semibold text-slate-500 ml-1">4.8 (312)</span>
+          </div>
+          <div class="flex items-center justify-between text-sm">
+            <span class="flex items-center gap-1 text-slate-500"><i data-lucide="map-pin" class="w-3.5 h-3.5"></i> 1.2 km away</span>
+            <span class="font-heading font-bold text-primary">৳500</span>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-md p-5 hover:shadow-xl hover:scale-[1.02] transition-all">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white font-heading font-bold">KE</div>
+            <div class="flex-1">
+              <p class="text-sm font-bold text-slate-900">Karim Electric Works</p>
+              <p class="text-xs text-slate-400">Electrician</p>
+            </div>
+            <span class="inline-flex items-center gap-1 text-xs font-bold bg-emerald-50 text-emerald-600 px-2 py-1 rounded-full">
+              <i data-lucide="badge-check" class="w-3.5 h-3.5"></i> Verified
+            </span>
+          </div>
+          <div class="flex items-center gap-1 text-amber-400 mb-3">
+            <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+            <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+            <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+            <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+            <i data-lucide="star" class="w-4 h-4 text-slate-200 fill-slate-200"></i>
+            <span class="text-xs font-semibold text-slate-500 ml-1">4.6 (198)</span>
+          </div>
+          <div class="flex items-center justify-between text-sm">
+            <span class="flex items-center gap-1 text-slate-500"><i data-lucide="map-pin" class="w-3.5 h-3.5"></i> 0.8 km away</span>
+            <span class="font-heading font-bold text-primary">৳350</span>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-md p-5 hover:shadow-xl hover:scale-[1.02] transition-all">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-400 to-green-500 flex items-center justify-center text-white font-heading font-bold">CP</div>
+            <div class="flex-1">
+              <p class="text-sm font-bold text-slate-900">CleanPro Services</p>
+              <p class="text-xs text-slate-400">Cleaner</p>
+            </div>
+            <span class="inline-flex items-center gap-1 text-xs font-bold bg-emerald-50 text-emerald-600 px-2 py-1 rounded-full">
+              <i data-lucide="badge-check" class="w-3.5 h-3.5"></i> Verified
+            </span>
+          </div>
+          <div class="flex items-center gap-1 text-amber-400 mb-3">
+            <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+            <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+            <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+            <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+            <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+            <span class="text-xs font-semibold text-slate-500 ml-1">4.9 (267)</span>
+          </div>
+          <div class="flex items-center justify-between text-sm">
+            <span class="flex items-center gap-1 text-slate-500"><i data-lucide="map-pin" class="w-3.5 h-3.5"></i> 2.1 km away</span>
+            <span class="font-heading font-bold text-primary">৳800</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ WHY FIXMATE ============ -->
+  <section class="max-w-7xl mx-auto px-6 lg:px-8 py-24">
+    <div class="text-center max-w-xl mx-auto mb-14">
+      <span class="text-xs font-bold uppercase tracking-widest text-primary">Why FixMate</span>
+      <h2 class="text-3xl sm:text-4xl font-heading font-extrabold text-slate-900 mt-2 mb-3">Book with total confidence</h2>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="bg-white rounded-2xl border border-slate-100 shadow-md p-6 hover:shadow-xl hover:scale-[1.02] transition-all">
+        <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-4">
+          <i data-lucide="shield-check" class="w-6 h-6"></i>
+        </div>
+        <h3 class="text-base font-heading font-bold text-slate-900 mb-2">Verified Professionals</h3>
+        <p class="text-sm text-slate-500 leading-relaxed">Every provider is document-checked and approved before going live.</p>
+      </div>
+      <div class="bg-white rounded-2xl border border-slate-100 shadow-md p-6 hover:shadow-xl hover:scale-[1.02] transition-all">
+        <div class="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary mb-4">
+          <i data-lucide="map-pin" class="w-6 h-6"></i>
+        </div>
+        <h3 class="text-base font-heading font-bold text-slate-900 mb-2">Location-Based Search</h3>
+        <p class="text-sm text-slate-500 leading-relaxed">Find providers ranked by distance from you, not just popularity.</p>
+      </div>
+      <div class="bg-white rounded-2xl border border-slate-100 shadow-md p-6 hover:shadow-xl hover:scale-[1.02] transition-all">
+        <div class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center text-amber-500 mb-4">
+          <i data-lucide="credit-card" class="w-6 h-6"></i>
+        </div>
+        <h3 class="text-base font-heading font-bold text-slate-900 mb-2">Instant Booking &amp; Payment</h3>
+        <p class="text-sm text-slate-500 leading-relaxed">Pick a slot, pay securely online, and get instant confirmation.</p>
+      </div>
+      <div class="bg-white rounded-2xl border border-slate-100 shadow-md p-6 hover:shadow-xl hover:scale-[1.02] transition-all">
+        <div class="w-12 h-12 rounded-xl bg-rose-100 flex items-center justify-center text-rose-500 mb-4">
+          <i data-lucide="star" class="w-6 h-6"></i>
+        </div>
+        <h3 class="text-base font-heading font-bold text-slate-900 mb-2">Transparent Reviews</h3>
+        <p class="text-sm text-slate-500 leading-relaxed">Real ratings from completed jobs — no fake reviews, ever.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CTA BANNER ============ -->
+  <section class="max-w-7xl mx-auto px-6 lg:px-8 pb-24">
+    <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-primary to-secondary px-8 py-16 text-center shadow-2xl shadow-primary/30">
+      <div class="absolute -top-10 -left-10 w-56 h-56 bg-white/10 rounded-full blur-3xl"></div>
+      <div class="absolute -bottom-16 -right-10 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+      <div class="relative">
+        <h2 class="text-2xl sm:text-3xl font-heading font-extrabold text-white mb-3">Ready to find your provider?</h2>
+        <p class="text-sm text-white/80 mb-8">Join thousands of customers booking trusted local services every day.</p>
+        <a href="#" class="inline-flex items-center gap-2 bg-white text-primary text-sm font-bold px-8 py-3.5 rounded-xl hover:scale-[1.03] transition-all shadow-lg">
+          Get Started — It's Free <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="bg-slate-900">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8 py-14">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-8 mb-10">
+        <div>
+          <div class="flex items-center gap-2 mb-3">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white">
+              <i data-lucide="wrench" class="w-4 h-4"></i>
+            </div>
+            <span class="text-sm font-heading font-bold text-white">FixMate</span>
+          </div>
+          <p class="text-xs text-slate-400 leading-relaxed">Find a trusted service provider near you.</p>
+        </div>
+        <div>
+          <p class="text-xs font-bold text-white uppercase tracking-wide mb-3">Product</p>
+          <ul class="space-y-2 text-xs text-slate-400">
+            <li><a href="#" class="hover:text-secondary transition-colors">Features</a></li>
+            <li><a href="#" class="hover:text-secondary transition-colors">How it Works</a></li>
+            <li><a href="#" class="hover:text-secondary transition-colors">Pricing</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="text-xs font-bold text-white uppercase tracking-wide mb-3">Company</p>
+          <ul class="space-y-2 text-xs text-slate-400">
+            <li><a href="#" class="hover:text-secondary transition-colors">About</a></li>
+            <li><a href="#" class="hover:text-secondary transition-colors">Careers</a></li>
+            <li><a href="#" class="hover:text-secondary transition-colors">Contact</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="text-xs font-bold text-white uppercase tracking-wide mb-3">Legal</p>
+          <ul class="space-y-2 text-xs text-slate-400">
+            <li><a href="#" class="hover:text-secondary transition-colors">Privacy Policy</a></li>
+            <li><a href="#" class="hover:text-secondary transition-colors">Terms of Service</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <p class="text-xs text-slate-500">© 2026 FixMate. All rights reserved.</p>
+        <div class="flex items-center gap-3">
+          <a href="#" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-primary flex items-center justify-center text-slate-400 hover:text-white transition-colors"><i data-lucide="facebook" class="w-4 h-4"></i></a>
+          <a href="#" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-primary flex items-center justify-center text-slate-400 hover:text-white transition-colors"><i data-lucide="twitter" class="w-4 h-4"></i></a>
+          <a href="#" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-primary flex items-center justify-center text-slate-400 hover:text-white transition-colors"><i data-lucide="linkedin" class="w-4 h-4"></i></a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>

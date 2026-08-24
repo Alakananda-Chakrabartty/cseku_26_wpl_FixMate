@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FixMate — Login / Sign Up</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: { primary: '#4F46E5', secondary: '#14B8A6', bgsoft: '#F8FAFC' },
+        fontFamily: { heading: ['Poppins', 'sans-serif'], body: ['Inter', 'sans-serif'] }
+      }
+    }
+  }
+</script>
+<style>
+  input[type="radio"].tab-toggle { position: absolute; opacity: 0; pointer-events: none; }
+  #tab-login:checked ~ .login-panel { display: block; }
+  #tab-login:checked ~ .tabs label[for="tab-login"] { background: linear-gradient(90deg,#4F46E5,#4338CA); color: #fff; box-shadow: 0 4px 14px rgba(79,70,229,0.35); }
+  #tab-register:checked ~ .register-panel { display: block; }
+  #tab-register:checked ~ .tabs label[for="tab-register"] { background: linear-gradient(90deg,#4F46E5,#4338CA); color: #fff; box-shadow: 0 4px 14px rgba(79,70,229,0.35); }
+  .login-panel, .register-panel { display: none; }
+  @keyframes float { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-14px); } }
+  .float-1 { animation: float 6s ease-in-out infinite; }
+  .float-2 { animation: float 7s ease-in-out infinite 1s; }
+  .float-3 { animation: float 5s ease-in-out infinite 0.5s; }
+</style>
+</head>
+<body class="bg-bgsoft text-slate-700 font-body antialiased min-h-screen">
+
+  <div class="min-h-screen flex flex-col lg:flex-row">
+
+    <!-- ============ LEFT: GRADIENT / GLASSMORPHISM PANEL ============ -->
+    <div class="hidden lg:flex lg:w-1/2 relative items-center justify-center overflow-hidden bg-gradient-to-br from-primary via-indigo-600 to-secondary p-12">
+      <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(circle at 25% 25%, white 1px, transparent 1px); background-size: 28px 28px;"></div>
+      <div class="absolute -top-20 -left-16 w-72 h-72 bg-white/10 rounded-full blur-3xl"></div>
+      <div class="absolute -bottom-24 -right-10 w-80 h-80 bg-secondary/40 rounded-full blur-3xl"></div>
+
+      <div class="absolute top-10 left-10 flex items-center gap-2.5 z-10">
+        <div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur border border-white/30 flex items-center justify-center text-white">
+          <i data-lucide="wrench" class="w-5 h-5"></i>
+        </div>
+        <span class="text-xl font-heading font-bold text-white">FixMate</span>
+      </div>
+
+      <!-- Floating glassmorphism illustration cards -->
+      <div class="relative w-full max-w-sm h-96">
+        <div class="float-1 absolute top-0 left-4 w-44 bg-white/15 backdrop-blur-xl border border-white/25 rounded-2xl p-4 shadow-2xl">
+          <div class="w-9 h-9 rounded-lg bg-amber-400 flex items-center justify-center text-white mb-3">
+            <i data-lucide="zap" class="w-4.5 h-4.5"></i>
+          </div>
+          <p class="text-xs font-bold text-white">Electrician</p>
+          <p class="text-[10px] text-white/70">Verified · 1.2 km</p>
+        </div>
+
+        <div class="float-2 absolute top-24 right-0 w-48 bg-white/15 backdrop-blur-xl border border-white/25 rounded-2xl p-4 shadow-2xl">
+          <div class="flex items-center gap-2 mb-2">
+            <div class="w-8 h-8 rounded-full bg-white/25 flex items-center justify-center text-white font-heading font-bold text-xs">RS</div>
+            <div>
+              <p class="text-xs font-bold text-white">Rahim AC Service</p>
+              <p class="text-[10px] text-white/70 flex items-center gap-0.5">4.8 <i data-lucide="star" class="w-2.5 h-2.5 fill-amber-300 text-amber-300"></i></p>
+            </div>
+          </div>
+          <p class="text-[10px] text-white/80">Booking confirmed for 3:00 PM</p>
+        </div>
+
+        <div class="float-3 absolute bottom-6 left-8 w-40 bg-white/15 backdrop-blur-xl border border-white/25 rounded-2xl p-4 shadow-2xl">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg bg-emerald-400/80 flex items-center justify-center text-white">
+              <i data-lucide="check" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-white">Payment Success</p>
+              <p class="text-[10px] text-white/70">৳500 · SSLCommerz</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="absolute bottom-10 left-10 right-10 z-10">
+        <p class="text-2xl font-heading font-bold text-white leading-snug mb-2">"Find a trusted service<br/>provider near you."</p>
+        <p class="text-sm text-white/70">Electricians · Plumbers · AC Techs · Cleaners &amp; more</p>
+      </div>
+    </div>
+
+    <!-- ============ RIGHT: FORM PANEL ============ -->
+    <div class="flex-1 flex items-center justify-center px-6 py-12">
+      <div class="w-full max-w-md">
+
+        <!-- Mobile logo -->
+        <div class="flex lg:hidden items-center gap-2.5 mb-8 justify-center">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white shadow-lg shadow-primary/30">
+            <i data-lucide="wrench" class="w-5 h-5"></i>
+          </div>
+          <span class="text-xl font-heading font-bold text-slate-900">FixMate</span>
+        </div>
+
+        <!-- Tab toggle (pure CSS) -->
+        <input type="radio" name="auth-tab" id="tab-login" class="tab-toggle" checked />
+        <input type="radio" name="auth-tab" id="tab-register" class="tab-toggle" />
+
+        <div class="tabs grid grid-cols-2 bg-slate-100 rounded-xl p-1.5 mb-8">
+          <label for="tab-login" class="text-center text-sm font-bold py-2.5 rounded-lg cursor-pointer text-slate-500 transition-all">Log In</label>
+          <label for="tab-register" class="text-center text-sm font-bold py-2.5 rounded-lg cursor-pointer text-slate-500 transition-all">Sign Up</label>
+        </div>
+
+        <!-- ===== LOGIN PANEL ===== -->
+        <div class="login-panel">
+          <h1 class="text-2xl font-heading font-extrabold text-slate-900 mb-1">Welcome back 👋</h1>
+          <p class="text-sm text-slate-500 mb-7">Log in to manage your bookings and payments.</p>
+
+          <form class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Email Address</label>
+              <div class="relative">
+                <i data-lucide="mail" class="w-4.5 h-4.5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+                <input type="email" placeholder="you@example.com" class="w-full text-sm border border-slate-200 rounded-xl pl-10 pr-3.5 py-3 text-slate-700 focus:outline-none focus:ring-4 focus:ring-primary/15 focus:border-primary transition-all" />
+              </div>
+            </div>
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide">Password</label>
+                <a href="#" class="text-xs text-primary hover:text-indigo-700 font-semibold">Forgot password?</a>
+              </div>
+              <div class="relative">
+                <i data-lucide="lock" class="w-4.5 h-4.5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+                <input type="password" placeholder="••••••••" class="w-full text-sm border border-slate-200 rounded-xl pl-10 pr-10 py-3 text-slate-700 focus:outline-none focus:ring-4 focus:ring-primary/15 focus:border-primary transition-all" />
+                <i data-lucide="eye" class="w-4.5 h-4.5 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 cursor-pointer"></i>
+              </div>
+            </div>
+            <label class="flex items-center gap-2 text-sm text-slate-600">
+              <input type="checkbox" class="rounded border-slate-300 text-primary focus:ring-primary/40" />
+              Keep me logged in
+            </label>
+
+            <button type="button" class="w-full bg-gradient-to-r from-primary to-indigo-600 text-white text-sm font-bold py-3.5 rounded-xl hover:scale-[1.02] transition-all shadow-lg shadow-primary/30 flex items-center justify-center gap-2">
+              Log In <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+          </form>
+
+          <div class="flex items-center gap-3 my-7">
+            <div class="flex-1 h-px bg-slate-200"></div>
+            <span class="text-xs text-slate-400 font-medium">or continue with</span>
+            <div class="flex-1 h-px bg-slate-200"></div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <button class="flex items-center justify-center gap-2 border border-slate-200 rounded-xl py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50 hover:scale-[1.02] transition-all">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4.5 h-4.5" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l6-6C34.5 5.1 29.6 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21 21-9.4 21-21c0-1.4-.1-2.7-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.5 15.1 18.9 12 24 12c3.1 0 5.8 1.1 8 3l6-6C34.5 5.1 29.6 3 24 3c-7.7 0-14.3 4.4-17.7 10.7z"/><path fill="#4CAF50" d="M24 45c5.5 0 10.4-2.1 14.1-5.5l-6.5-5.5C29.5 35.6 26.9 36.5 24 36.5c-5.2 0-9.6-3.3-11.3-8l-6.6 5.1C9.6 40.4 16.3 45 24 45z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.2-4.1 5.6l6.5 5.5C41.5 36 44 30.5 44 24c0-1.4-.1-2.7-.4-3.5z"/></svg>
+              Google
+            </button>
+            <button class="flex items-center justify-center gap-2 border border-slate-200 rounded-xl py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50 hover:scale-[1.02] transition-all">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4.5 h-4.5" viewBox="0 0 24 24" fill="#1877F2"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.4h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.4v7A10 10 0 0 0 22 12Z"/></svg>
+              Facebook
+            </button>
+          </div>
+
+          <p class="text-center text-xs text-slate-400 mt-8">
+            Don't have an account?
+            <label for="tab-register" class="text-primary font-bold cursor-pointer hover:underline">Sign up</label>
+          </p>
+        </div>
+
+        <!-- ===== REGISTER PANEL ===== -->
+        <div class="register-panel">
+          <h1 class="text-2xl font-heading font-extrabold text-slate-900 mb-1">Create your account 🚀</h1>
+          <p class="text-sm text-slate-500 mb-7">Join FixMate to book or offer local services.</p>
+
+          <form class="space-y-4">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Full Name</label>
+                <div class="relative">
+                  <i data-lucide="user" class="w-4.5 h-4.5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+                  <input type="text" placeholder="Jane Doe" class="w-full text-sm border border-slate-200 rounded-xl pl-10 pr-3 py-3 text-slate-700 focus:outline-none focus:ring-4 focus:ring-primary/15 focus:border-primary transition-all" />
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Phone</label>
+                <div class="relative">
+                  <i data-lucide="phone" class="w-4.5 h-4.5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+                  <input type="text" placeholder="01XXXXXXXXX" class="w-full text-sm border border-slate-200 rounded-xl pl-10 pr-3 py-3 text-slate-700 focus:outline-none focus:ring-4 focus:ring-primary/15 focus:border-primary transition-all" />
+                </div>
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Email Address</label>
+              <div class="relative">
+                <i data-lucide="mail" class="w-4.5 h-4.5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+                <input type="email" placeholder="you@example.com" class="w-full text-sm border border-slate-200 rounded-xl pl-10 pr-3.5 py-3 text-slate-700 focus:outline-none focus:ring-4 focus:ring-primary/15 focus:border-primary transition-all" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Password</label>
+              <div class="relative">
+                <i data-lucide="lock" class="w-4.5 h-4.5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+                <input type="password" placeholder="Create a password" class="w-full text-sm border border-slate-200 rounded-xl pl-10 pr-3.5 py-3 text-slate-700 focus:outline-none focus:ring-4 focus:ring-primary/15 focus:border-primary transition-all" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">I am signing up as</label>
+              <div class="grid grid-cols-2 gap-3">
+                <label class="flex items-center justify-center gap-2 border-2 border-primary bg-primary/5 rounded-xl py-3 text-sm font-bold text-primary cursor-pointer">
+                  <i data-lucide="user" class="w-4 h-4"></i>
+                  <input type="radio" name="user-type" checked class="hidden" /> Customer
+                </label>
+                <label class="flex items-center justify-center gap-2 border border-slate-200 rounded-xl py-3 text-sm font-semibold text-slate-500 cursor-pointer hover:bg-slate-50 transition-colors">
+                  <i data-lucide="briefcase" class="w-4 h-4"></i>
+                  <input type="radio" name="user-type" class="hidden" /> Provider
+                </label>
+              </div>
+            </div>
+
+            <label class="flex items-start gap-2 text-xs text-slate-500">
+              <input type="checkbox" class="mt-0.5 rounded border-slate-300 text-primary focus:ring-primary/40" />
+              I agree to the <a href="#" class="text-primary font-semibold underline">Terms of Service</a> and <a href="#" class="text-primary font-semibold underline">Privacy Policy</a>
+            </label>
+
+            <button type="button" class="w-full bg-gradient-to-r from-primary to-indigo-600 text-white text-sm font-bold py-3.5 rounded-xl hover:scale-[1.02] transition-all shadow-lg shadow-primary/30 flex items-center justify-center gap-2">
+              Create Account <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+          </form>
+
+          <div class="flex items-center gap-3 my-7">
+            <div class="flex-1 h-px bg-slate-200"></div>
+            <span class="text-xs text-slate-400 font-medium">or continue with</span>
+            <div class="flex-1 h-px bg-slate-200"></div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <button class="flex items-center justify-center gap-2 border border-slate-200 rounded-xl py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50 hover:scale-[1.02] transition-all">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4.5 h-4.5" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l6-6C34.5 5.1 29.6 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21 21-9.4 21-21c0-1.4-.1-2.7-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.5 15.1 18.9 12 24 12c3.1 0 5.8 1.1 8 3l6-6C34.5 5.1 29.6 3 24 3c-7.7 0-14.3 4.4-17.7 10.7z"/><path fill="#4CAF50" d="M24 45c5.5 0 10.4-2.1 14.1-5.5l-6.5-5.5C29.5 35.6 26.9 36.5 24 36.5c-5.2 0-9.6-3.3-11.3-8l-6.6 5.1C9.6 40.4 16.3 45 24 45z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.2-4.1 5.6l6.5 5.5C41.5 36 44 30.5 44 24c0-1.4-.1-2.7-.4-3.5z"/></svg>
+              Google
+            </button>
+            <button class="flex items-center justify-center gap-2 border border-slate-200 rounded-xl py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50 hover:scale-[1.02] transition-all">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4.5 h-4.5" viewBox="0 0 24 24" fill="#1877F2"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.4h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.4v7A10 10 0 0 0 22 12Z"/></svg>
+              Facebook
+            </button>
+          </div>
+
+          <p class="text-center text-xs text-slate-400 mt-8">
+            Already have an account?
+            <label for="tab-login" class="text-primary font-bold cursor-pointer hover:underline">Log in</label>
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>
