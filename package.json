@@ -1,0 +1,20 @@
+{
+  "name": "fixmate-server",
+  "version": "1.0.0",
+  "description": "Express server for the FixMate local services marketplace web app",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "jest",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0"
+  },
+  "devDependencies": {
+    "jest": "^30.5.0",
+    "nodemon": "^3.1.4"
+  }
+}
