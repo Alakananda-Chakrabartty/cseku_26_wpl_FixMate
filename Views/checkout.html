@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FixMate — Checkout</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#132038; --ink-soft:#233350; --paper:#FAF7F0; --paper-dim:#F1ECE0;
+    --brass:#B98A2E; --brass-light:#E3B25E; --slate:#5C6470; --line:#E3DECF;
+    --error:#B3413A; --success:#2F6D4F;
+    --bkash:#E2136E; --nagad:#F7941D; --rocket:#8C3494;
+  }
+  body{ background:var(--paper); color:var(--ink); font-family:'Inter',sans-serif; }
+  .font-display{ font-family:'Fraunces',serif; }
+  .font-mono{ font-family:'IBM Plex Mono',monospace; letter-spacing:.06em; }
+
+  .field-label{ font-size:.7rem; font-weight:600; color:var(--slate); text-transform:uppercase; letter-spacing:.05em; margin-bottom:.3rem; display:block; }
+  .field-input{ width:100%; font-size:.875rem; background:#fff; border:1px solid var(--line); border-radius:.5rem; padding:.65rem .8rem; }
+  .field-input:focus{ outline:none; box-shadow:0 0 0 2px var(--brass-light); border-color:var(--brass); }
+
+  .pay-option{
+    position:relative; border:1.5px solid var(--line); border-radius:12px; padding:.9rem 1rem;
+    display:flex; align-items:center; gap:.75rem; cursor:pointer; transition:border-color .2s ease, background .2s ease;
+    background:#fff;
+  }
+  .pay-option:hover{ border-color:var(--brass-light); }
+  .pay-option input{ position:absolute; opacity:0; inset:0; cursor:pointer; margin:0; }
+  .pay-option .pay-dot{
+    width:18px; height:18px; border-radius:999px; border:2px solid var(--line); flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; transition:border-color .2s ease;
+  }
+  .pay-option .pay-dot::after{ content:''; width:9px; height:9px; border-radius:999px; background:var(--brass); transform:scale(0); transition:transform .15s ease; }
+  .pay-option input:checked ~ .pay-dot{ border-color:var(--brass); }
+  .pay-option input:checked ~ .pay-dot::after{ transform:scale(1); }
+  .pay-option.is-checked{ border-color:var(--brass); background:#FEFBF3; }
+
+  .wallet-badge{ width:38px; height:38px; border-radius:9px; display:flex; align-items:center; justify-content:center; color:#fff; font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:11px; flex-shrink:0; }
+
+  #wallet-phone-wrap{ overflow:hidden; max-height:0; transition:max-height .3s ease, opacity .3s ease, margin-top .3s ease; opacity:0; }
+  #wallet-phone-wrap.is-open{ max-height:6rem; opacity:1; margin-top:.9rem; }
+
+  .summary-card{ position:sticky; top:5.5rem; }
+
+  .spinner{ width:16px; height:16px; border:2px solid rgba(255,255,255,0.4); border-top-color:#fff; border-radius:999px; animation:spin .7s linear infinite; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  #toast-stack{ position:fixed; top:1rem; right:1rem; z-index:100; display:flex; flex-direction:column; gap:.5rem; }
+  .toast{ min-width:260px; max-width:340px; background:var(--ink); color:var(--paper); border-left:4px solid var(--brass); border-radius:.5rem; padding:.85rem 1rem; font-size:.8rem; box-shadow:0 14px 30px -10px rgba(0,0,0,0.4); display:flex; align-items:flex-start; gap:.6rem; transform:translateX(120%); opacity:0; animation:toast-in .35s cubic-bezier(.2,.8,.2,1) forwards; }
+  .toast.toast-error{ border-left-color:var(--error); }
+  .toast.toast-success{ border-left-color:var(--success); }
+  .toast.toast-out{ animation:toast-out .3s ease forwards; }
+  @keyframes toast-in{ to{ transform:translateX(0); opacity:1; } }
+  @keyframes toast-out{ to{ transform:translateX(120%); opacity:0; } }
+
+  @media (prefers-reduced-motion: reduce){
+    .pay-option, #wallet-phone-wrap, .toast{ transition:none; animation:none; }
+  }
+</style>
+</head>
+<body class="antialiased">
+
+  <div id="toast-stack" aria-live="polite"></div>
+
+  <header class="sticky top-0 z-40 bg-[var(--paper)]/90 backdrop-blur border-b border-[var(--line)]">
+    <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <a href="/dashboard" class="font-display text-xl font-semibold tracking-tight text-[var(--ink)]">FixMate</a>
+      <a href="/logout" class="border border-[var(--line)] px-4 py-2 rounded-lg hover:bg-[var(--paper-dim)] transition text-sm">Log Out</a>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-6 py-16">
+    <span class="font-mono text-[11px] text-[var(--brass)] uppercase">Step 2 of 2</span>
+    <h1 class="font-display text-2xl md:text-3xl font-semibold text-[var(--ink)] mt-1 mb-8">Checkout</h1>
+
+    <form id="checkout-form" class="grid lg:grid-cols-5 gap-8 items-start">
+
+      <!-- LEFT: service details + address -->
+      <div class="lg:col-span-3 space-y-6">
+
+        <section class="bg-white border border-[var(--line)] rounded-2xl p-6">
+          <h2 class="font-display text-lg font-semibold text-[var(--ink)] mb-4">Service details</h2>
+          <div class="flex items-center justify-between text-sm mb-2">
+            <span class="text-[var(--slate)]">Service</span>
+            <span class="font-medium text-[var(--ink)]">AC Servicing</span>
+          </div>
+          <div class="flex items-center justify-between text-sm mb-2">
+            <span class="text-[var(--slate)]">Provider</span>
+            <span class="font-medium text-[var(--ink)]">CoolFix Ltd.</span>
+          </div>
+          <div class="flex items-center justify-between text-sm">
+            <span class="text-[var(--slate)]">Preferred date &amp; time</span>
+            <span class="font-medium text-[var(--ink)]">Sep 2, 2026 · 3:00 PM</span>
+          </div>
+        </section>
+
+        <section class="bg-white border border-[var(--line)] rounded-2xl p-6">
+          <h2 class="font-display text-lg font-semibold text-[var(--ink)] mb-4">Service address</h2>
+          <div class="grid sm:grid-cols-2 gap-4">
+            <div class="sm:col-span-2">
+              <label class="field-label">Full name</label>
+              <input type="text" name="fullName" required placeholder="Jane Doe" class="field-input" />
+            </div>
+            <div class="sm:col-span-2">
+              <label class="field-label">Phone number</label>
+              <input type="tel" name="phone" required placeholder="01XXXXXXXXX" class="field-input" />
+            </div>
+            <div class="sm:col-span-2">
+              <label class="field-label">Address line</label>
+              <input type="text" name="address" required placeholder="House, road, area" class="field-input" />
+            </div>
+            <div>
+              <label class="field-label">City</label>
+              <input type="text" name="city" required placeholder="Khulna" class="field-input" />
+            </div>
+            <div>
+              <label class="field-label">Postal code</label>
+              <input type="text" name="postal" placeholder="9000" class="field-input" />
+            </div>
+            <div class="sm:col-span-2">
+              <label class="field-label">Notes for the provider (optional)</label>
+              <textarea name="notes" rows="3" placeholder="Gate code, parking instructions, etc." class="field-input resize-none"></textarea>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- RIGHT: summary + payment -->
+      <div class="lg:col-span-2 summary-card space-y-6">
+
+        <section class="bg-white border border-[var(--line)] rounded-2xl p-6">
+          <h2 class="font-display text-lg font-semibold text-[var(--ink)] mb-4">Booking summary</h2>
+          <div class="flex justify-between text-sm mb-2">
+            <span class="text-[var(--slate)]">Service fee</span>
+            <span class="text-[var(--ink)]">৳450</span>
+          </div>
+          <div class="flex justify-between text-sm mb-3 pb-3 border-b border-dashed border-[var(--line)]">
+            <span class="text-[var(--slate)]">Platform fee</span>
+            <span class="text-[var(--ink)]">৳50</span>
+          </div>
+          <div class="flex justify-between text-sm font-semibold">
+            <span class="text-[var(--ink)]">Total due</span>
+            <span class="font-mono text-[var(--ink)]">৳500</span>
+          </div>
+        </section>
+
+        <section class="bg-white border border-[var(--line)] rounded-2xl p-6">
+          <h2 class="font-display text-lg font-semibold text-[var(--ink)] mb-1">Payment method</h2>
+          <p class="text-xs text-[var(--slate)] mb-4">FixMate accepts online mobile wallet payments only — no cash on delivery.</p>
+
+          <div class="space-y-3" id="pay-options">
+            <label class="pay-option" data-wallet="bkash">
+              <input type="radio" name="wallet" value="bkash" required>
+              <span class="wallet-badge" style="background:var(--bkash)">bKash</span>
+              <span class="flex-1">
+                <span class="block text-sm font-semibold text-[var(--ink)]">bKash</span>
+                <span class="block text-xs text-[var(--slate)]">Pay via bKash wallet</span>
+              </span>
+              <span class="pay-dot"></span>
+            </label>
+
+            <label class="pay-option" data-wallet="nagad">
+              <input type="radio" name="wallet" value="nagad" required>
+              <span class="wallet-badge" style="background:var(--nagad)">Nagad</span>
+              <span class="flex-1">
+                <span class="block text-sm font-semibold text-[var(--ink)]">Nagad</span>
+                <span class="block text-xs text-[var(--slate)]">Pay via Nagad wallet</span>
+              </span>
+              <span class="pay-dot"></span>
+            </label>
+
+            <label class="pay-option" data-wallet="rocket">
+              <input type="radio" name="wallet" value="rocket" required>
+              <span class="wallet-badge" style="background:var(--rocket)">Rocket</span>
+              <span class="flex-1">
+                <span class="block text-sm font-semibold text-[var(--ink)]">Rocket</span>
+                <span class="block text-xs text-[var(--slate)]">Pay via Rocket wallet</span>
+              </span>
+              <span class="pay-dot"></span>
+            </label>
+          </div>
+
+          <div id="wallet-phone-wrap">
+            <label class="field-label">Wallet number</label>
+            <input type="tel" id="wallet-phone" placeholder="01XXXXXXXXX" class="field-input" />
+          </div>
+
+          <button type="submit" id="pay-btn" class="w-full mt-5 bg-[var(--ink)] text-[var(--paper)] text-sm font-semibold py-3.5 rounded-lg hover:bg-[var(--ink-soft)] transition flex items-center justify-center gap-2">
+            <span id="pay-btn-label">Pay ৳500 &amp; Confirm Booking</span>
+          </button>
+          <p class="text-[11px] text-center text-[var(--slate)] mt-3">You'll get a payment prompt on your wallet app to complete this transaction.</p>
+        </section>
+
+      </div>
+    </form>
+  </main>
+
+  <script>
+    // ---- Payment option selection ----
+    const payOptions = document.querySelectorAll('.pay-option');
+    const walletPhoneWrap = document.getElementById('wallet-phone-wrap');
+    const walletPhoneInput = document.getElementById('wallet-phone');
+
+    payOptions.forEach(opt => {
+      const input = opt.querySelector('input');
+      opt.addEventListener('click', () => {
+        payOptions.forEach(o => o.classList.remove('is-checked'));
+        opt.classList.add('is-checked');
+        input.checked = true;
+        walletPhoneWrap.classList.add('is-open');
+        walletPhoneInput.required = true;
+      });
+    });
+
+    // ---- Toast ----
+    const toastStack = document.getElementById('toast-stack');
+    function showToast(message, type = 'success'){
+      const el = document.createElement('div');
+      el.className = `toast toast-${type}`;
+      el.innerHTML = `<span>${type === 'success' ? '✓' : '⚠'}</span><span>${message}</span>`;
+      toastStack.appendChild(el);
+      setTimeout(() => {
+        el.classList.add('toast-out');
+        el.addEventListener('animationend', () => el.remove());
+      }, 3200);
+    }
+
+    // ---- Submit ----
+    const form = document.getElementById('checkout-form');
+    const payBtn = document.getElementById('pay-btn');
+    const payBtnLabel = document.getElementById('pay-btn-label');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const selectedWallet = form.querySelector('input[name="wallet"]:checked');
+      if (!selectedWallet){
+        showToast('Choose a payment method to continue.', 'error');
+        return;
+      }
+
+      const formData = new FormData(form);
+      const payload = Object.fromEntries(formData.entries());
+      payload.walletPhone = walletPhoneInput.value;
+
+      payBtn.disabled = true;
+      payBtnLabel.innerHTML = '<span class="spinner inline-block align-middle mr-1"></span> Processing payment…';
+
+      try {
+        const res = await fetch('/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          showToast('Payment confirmed — booking secured!', 'success');
+          setTimeout(() => { window.location.href = data.redirect || '/dashboard'; }, 900);
+        } else {
+          showToast(data.message || 'Payment failed. Please try again.', 'error');
+          payBtn.disabled = false;
+          payBtnLabel.textContent = 'Pay ৳500 & Confirm Booking';
+        }
+      } catch (err) {
+        showToast('Network error. Please try again.', 'error');
+        payBtn.disabled = false;
+        payBtnLabel.textContent = 'Pay ৳500 & Confirm Booking';
+      }
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FixMate — Provider Profile</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#132038; --ink-soft:#233350; --paper:#FAF7F0; --paper-dim:#F1ECE0;
+    --brass:#B98A2E; --brass-light:#E3B25E; --slate:#5C6470; --line:#E3DECF;
+    --green-bg:#E4F1E8; --green-text:#2F6D4F;
+  }
+  body{ background:var(--paper); color:var(--ink); font-family:'Inter',sans-serif; }
+  .font-display{ font-family:'Fraunces',serif; }
+  .font-mono{ font-family:'IBM Plex Mono',monospace; letter-spacing:.06em; }
+
+  .card{ background:#fff; border:1px solid var(--line); border-radius:16px; }
+
+  .stamp-badge{ display:inline-flex; align-items:center; gap:5px; background:var(--green-bg); color:var(--green-text); font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600; letter-spacing:.05em; padding:4px 12px; border-radius:999px; }
+
+  .field-label{ font-size:.7rem; font-weight:600; color:var(--slate); text-transform:uppercase; letter-spacing:.05em; margin-bottom:.3rem; display:block; }
+  .field-input{ width:100%; font-size:.875rem; background:#fff; border:1px solid var(--line); border-radius:.5rem; padding:.6rem .8rem; }
+  .field-input:focus{ outline:none; box-shadow:0 0 0 2px var(--brass-light); border-color:var(--brass); }
+  .field-input:disabled{ background:var(--paper-dim); color:var(--slate); }
+
+  .cta-btn{
+    background:var(--ink); color:var(--paper); transition:transform .25s cubic-bezier(.2,.8,.2,1), background .25s ease, box-shadow .25s ease;
+  }
+  .cta-btn:hover{ background:var(--ink-soft); transform:translateY(-2px); box-shadow:0 16px 30px -14px rgba(19,32,56,0.45); }
+
+  .avatar-ring{
+    background:conic-gradient(from 0deg, var(--brass), var(--brass-light), var(--brass));
+    padding:3px; border-radius:999px;
+  }
+</style>
+</head>
+<body class="antialiased">
+
+  <header class="sticky top-0 z-40 bg-[var(--paper)]/90 backdrop-blur border-b border-[var(--line)]">
+    <div class="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
+      <span class="font-display text-xl font-semibold tracking-tight text-[var(--ink)]">FixMate <span class="font-mono text-[11px] text-[var(--brass)] align-middle">PROVIDER</span></span>
+      <nav class="flex items-center gap-4 text-sm font-medium">
+        <a href="/provider-dashboard" class="text-[var(--slate)] hover:text-[var(--ink)] transition">Dashboard</a>
+        <a href="/logout" class="border border-[var(--line)] px-4 py-2 rounded-lg hover:bg-[var(--paper-dim)] transition">Log Out</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-6 py-16">
+
+    <span class="font-mono text-[11px] text-[var(--brass)] uppercase">Welcome back</span>
+    <h1 class="font-display text-2xl md:text-3xl font-semibold text-[var(--ink)] mt-1 mb-8">Your provider profile</h1>
+
+    <!-- PROFILE HEADER CARD -->
+    <div class="card p-6 md:p-8 mb-6">
+      <div class="flex flex-col sm:flex-row sm:items-center gap-6">
+        <div class="avatar-ring w-20 h-20 shrink-0">
+          <div id="avatar-initials" class="w-full h-full rounded-full bg-[var(--ink)] text-[var(--paper)] font-display font-semibold text-2xl flex items-center justify-center">CF</div>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap mb-1">
+            <h2 id="provider-name" class="font-display text-xl font-semibold text-[var(--ink)]">CoolFix Ltd.</h2>
+            <span class="stamp-badge">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Verified
+            </span>
+          </div>
+          <p id="provider-category" class="text-sm text-[var(--slate)]">AC Technician &middot; Member since Jan 2026</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-4 mt-7 pt-6 border-t border-dashed border-[var(--line)]">
+        <div>
+          <p class="font-display text-xl font-semibold text-[var(--ink)]">128</p>
+          <p class="text-xs text-[var(--slate)] mt-0.5">Jobs completed</p>
+        </div>
+        <div>
+          <p class="font-display text-xl font-semibold text-[var(--ink)] flex items-center gap-1">
+            4.8
+            <svg class="w-3.5 h-3.5 text-[var(--brass)]" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1l2.6 5.6 6.1.6-4.6 4.1 1.3 6-5.4-3.1-5.4 3.1 1.3-6L1.3 7.2l6.1-.6z"/></svg>
+          </p>
+          <p class="text-xs text-[var(--slate)] mt-0.5">Average rating</p>
+        </div>
+        <div>
+          <p class="font-display text-xl font-semibold text-[var(--ink)]">৳500</p>
+          <p class="text-xs text-[var(--slate)] mt-0.5">Pending payout</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- GO TO DASHBOARD CTA -->
+    <a href="/provider-dashboard" class="cta-btn flex items-center justify-between rounded-2xl px-6 py-5 mb-6 group">
+      <div>
+        <p class="font-display text-lg font-semibold">Go to your dashboard</p>
+        <p class="text-sm text-white/70 mt-0.5">Review new job requests and manage your bookings</p>
+      </div>
+      <svg class="w-5 h-5 shrink-0 transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+
+    <!-- CONTACT / BUSINESS DETAILS -->
+    <div class="card p-6 md:p-8">
+      <div class="flex items-center justify-between mb-5">
+        <h3 class="font-display text-lg font-semibold text-[var(--ink)]">Business details</h3>
+        <button type="button" id="edit-toggle" class="text-xs font-semibold text-[var(--brass)] hover:underline">Edit</button>
+      </div>
+
+      <form id="profile-form" class="grid sm:grid-cols-2 gap-4">
+        <div>
+          <label class="field-label">Business / Full name</label>
+          <input type="text" id="field-name" class="field-input" value="CoolFix Ltd." disabled />
+        </div>
+        <div>
+          <label class="field-label">Service category</label>
+          <input type="text" id="field-category" class="field-input" value="AC Technician" disabled />
+        </div>
+        <div>
+          <label class="field-label">Email</label>
+          <input type="email" id="field-email" class="field-input" value="coolfix@example.com" disabled />
+        </div>
+        <div>
+          <label class="field-label">Phone number</label>
+          <input type="tel" id="field-phone" class="field-input" value="01700000000" disabled />
+        </div>
+        <div class="sm:col-span-2">
+          <label class="field-label">Service area</label>
+          <input type="text" id="field-area" class="field-input" value="Khulna &amp; surrounding areas" disabled />
+        </div>
+        <div class="sm:col-span-2" id="save-row" hidden>
+          <button type="submit" class="w-full sm:w-auto bg-[var(--brass)] text-white text-sm font-semibold px-6 py-2.5 rounded-lg hover:bg-[var(--ink)] transition">Save changes</button>
+        </div>
+      </form>
+    </div>
+
+  </main>
+
+  <script>
+    // ---- Simple edit toggle (frontend-only — wire to a real PATCH /provider/profile endpoint) ----
+    const editToggle = document.getElementById('edit-toggle');
+    const saveRow = document.getElementById('save-row');
+    const fields = ['field-name', 'field-category', 'field-email', 'field-phone', 'field-area'].map(id => document.getElementById(id));
+    let editing = false;
+
+    editToggle.addEventListener('click', () => {
+      editing = !editing;
+      fields.forEach(f => f.disabled = !editing);
+      saveRow.hidden = !editing;
+      editToggle.textContent = editing ? 'Cancel' : 'Edit';
+    });
+
+    document.getElementById('profile-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      // TODO: replace with a real PATCH /provider/profile request once a
+      // provider profile store exists on the backend.
+      editing = false;
+      fields.forEach(f => f.disabled = true);
+      saveRow.hidden = true;
+      editToggle.textContent = 'Edit';
+    });
+  </script>
+
+</body>
+</html>

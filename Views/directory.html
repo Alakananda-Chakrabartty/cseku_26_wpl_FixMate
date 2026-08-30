@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FixMate — Provider Directory</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: { primary: '#4F46E5', secondary: '#0D9488', bgsoft: '#F8FAFC' },
+        fontFamily: { heading: ['"Plus Jakarta Sans"', 'sans-serif'], body: ['Inter', 'sans-serif'] }
+      }
+    }
+  }
+</script>
+<style>
+  @keyframes toastIn { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform: translateY(0); } }
+  @keyframes toastOut { from { opacity:1; } to { opacity:0; transform: translateY(12px); } }
+  .toast-in { animation: toastIn .25s ease forwards; }
+  .toast-out { animation: toastOut .25s ease forwards; }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:16px; height:16px; border-radius:9999px; background:#4F46E5; cursor:pointer; border:3px solid white; box-shadow:0 1px 4px rgba(0,0,0,0.3); }
+  input[type="range"]::-moz-range-thumb { width:16px; height:16px; border-radius:9999px; background:#4F46E5; cursor:pointer; border:3px solid white; box-shadow:0 1px 4px rgba(0,0,0,0.3); }
+</style>
+</head>
+<body class="bg-bgsoft text-slate-700 font-body antialiased">
+
+  <div id="toast-container" class="fixed bottom-6 right-6 z-[100] flex flex-col gap-2 items-end"></div>
+
+  <!-- ============ TOP BAR / NAVBAR ============ -->
+  <header class="sticky top-0 z-40 backdrop-blur-md bg-white/80 border-b border-slate-200/60">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 gap-4">
+        <a href="/" class="flex items-center gap-2.5 shrink-0">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white shadow-md shadow-primary/30">
+            <i data-lucide="wrench" class="w-4.5 h-4.5"></i>
+          </div>
+          <span class="hidden sm:block text-lg font-heading font-bold text-slate-900">FixMate</span>
+        </a>
+
+        <nav class="hidden md:flex items-center gap-1 text-sm font-semibold text-slate-500 shrink-0">
+          <a href="/" class="px-4 py-2 rounded-full hover:bg-slate-100 hover:text-primary transition-colors">Home</a>
+          <a href="/directory" class="px-4 py-2 rounded-full bg-primary/10 text-primary">Directory</a>
+          <a href="/dashboard" class="px-4 py-2 rounded-full hover:bg-slate-100 hover:text-primary transition-colors">Dashboard</a>
+        </nav>
+
+        <div class="flex items-center gap-3 shrink-0">
+          <a href="/login" class="hidden sm:inline-block text-sm font-semibold text-slate-600 hover:text-primary px-4 py-2 transition-colors">Log In</a>
+          <a href="/register" class="inline-flex items-center gap-1.5 text-sm font-semibold bg-gradient-to-r from-primary to-indigo-600 text-white px-5 py-2.5 rounded-xl hover:shadow-lg hover:shadow-primary/40 hover:-translate-y-0.5 transition-all duration-300">
+            Sign Up
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="max-w-7xl mx-auto px-6 lg:px-8 py-8 flex flex-col lg:flex-row gap-8">
+
+    <!-- ============ FILTER SIDEBAR ============ -->
+    <aside class="lg:w-72 shrink-0">
+      <div class="bg-white rounded-2xl shadow-lg border border-slate-200/60 p-5 lg:sticky lg:top-24">
+        <div class="flex items-center justify-between mb-5">
+          <h2 class="text-sm font-heading font-bold text-slate-900 flex items-center gap-2">
+            <i data-lucide="sliders-horizontal" class="w-4 h-4 text-primary"></i> Filters
+          </h2>
+          <button id="reset-filters" class="text-xs font-semibold text-primary hover:underline">Reset</button>
+        </div>
+
+        <div class="space-y-6">
+
+          <!-- Category -->
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-3">Category</label>
+            <div class="space-y-2.5">
+              <label class="flex items-center gap-2.5 text-sm text-slate-600 cursor-pointer">
+                <input type="checkbox" class="category-filter rounded border-slate-300 text-primary focus:ring-primary/40" value="electrician" checked />
+                <span class="w-2 h-2 rounded-full bg-amber-400"></span> Electrician
+              </label>
+              <label class="flex items-center gap-2.5 text-sm text-slate-600 cursor-pointer">
+                <input type="checkbox" class="category-filter rounded border-slate-300 text-primary focus:ring-primary/40" value="plumber" checked />
+                <span class="w-2 h-2 rounded-full bg-teal-500"></span> Plumber
+              </label>
+              <label class="flex items-center gap-2.5 text-sm text-slate-600 cursor-pointer">
+                <input type="checkbox" class="category-filter rounded border-slate-300 text-primary focus:ring-primary/40" value="ac" checked />
+                <span class="w-2 h-2 rounded-full bg-sky-400"></span> AC Technician
+              </label>
+              <label class="flex items-center gap-2.5 text-sm text-slate-600 cursor-pointer">
+                <input type="checkbox" class="category-filter rounded border-slate-300 text-primary focus:ring-primary/40" value="mechanic" checked />
+                <span class="w-2 h-2 rounded-full bg-orange-500"></span> Mechanic
+              </label>
+              <label class="flex items-center gap-2.5 text-sm text-slate-600 cursor-pointer">
+                <input type="checkbox" class="category-filter rounded border-slate-300 text-primary focus:ring-primary/40" value="cleaner" checked />
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Cleaner
+              </label>
+              <label class="flex items-center gap-2.5 text-sm text-slate-600 cursor-pointer">
+                <input type="checkbox" class="category-filter rounded border-slate-300 text-primary focus:ring-primary/40" value="painter" checked />
+                <span class="w-2 h-2 rounded-full bg-violet-500"></span> Painter
+              </label>
+            </div>
+          </div>
+
+          <hr class="border-slate-100" />
+
+          <!-- Price Range -->
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Max Hourly Rate</label>
+              <span id="price-output" class="text-xs font-bold text-primary">$150/hr</span>
+            </div>
+            <input id="price-range" type="range" min="20" max="150" step="5" value="150" class="w-full h-1.5 bg-slate-200 rounded-full appearance-none" />
+            <div class="flex justify-between text-[10px] text-slate-400 mt-1"><span>$20</span><span>$150</span></div>
+          </div>
+
+          <hr class="border-slate-100" />
+
+          <!-- Rating -->
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-3">Minimum Rating</label>
+            <div class="space-y-2.5">
+              <label class="flex items-center gap-2.5 text-sm text-slate-600 cursor-pointer">
+                <input type="radio" name="rating" class="rating-filter text-primary focus:ring-primary/40" value="4.5" />
+                4.5 ★ &amp; above
+              </label>
+              <label class="flex items-center gap-2.5 text-sm text-slate-600 cursor-pointer">
+                <input type="radio" name="rating" class="rating-filter text-primary focus:ring-primary/40" value="4.0" />
+                4.0 ★ &amp; above
+              </label>
+              <label class="flex items-center gap-2.5 text-sm text-slate-600 cursor-pointer">
+                <input type="radio" name="rating" class="rating-filter text-primary focus:ring-primary/40" value="0" checked />
+                Any rating
+              </label>
+            </div>
+          </div>
+
+          <hr class="border-slate-100" />
+
+          <!-- Verified Pro toggle -->
+          <label class="flex items-center justify-between cursor-pointer">
+            <span class="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
+              <i data-lucide="badge-check" class="w-4 h-4 text-emerald-500"></i> Verified Pro only
+            </span>
+            <input id="verified-only" type="checkbox" class="sr-only peer" />
+            <span class="relative w-10 h-5.5 bg-slate-200 peer-checked:bg-primary rounded-full transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:w-4.5 after:h-4.5 after:rounded-full after:transition-all peer-checked:after:translate-x-4.5"></span>
+          </label>
+
+        </div>
+      </div>
+    </aside>
+
+    <!-- ============ PROVIDER GRID ============ -->
+    <main class="flex-1 min-w-0">
+
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div>
+          <h1 class="text-2xl font-heading font-extrabold text-slate-900">Service Provider Directory</h1>
+          <p id="result-count" class="text-sm text-slate-500 mt-1">Showing 6 of 6 providers</p>
+        </div>
+        <select id="sort-select" class="text-sm border border-slate-200 rounded-xl px-3 py-2.5 bg-white focus:outline-none focus:ring-4 focus:ring-primary/15 focus:border-primary">
+          <option value="rating">Top Rated</option>
+          <option value="price-asc">Lowest Price</option>
+          <option value="price-desc">Highest Price</option>
+        </select>
+      </div>
+
+      <div id="provider-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+
+        <!-- Card 1 -->
+        <div class="provider-card bg-white rounded-2xl shadow-lg border border-slate-200/60 p-5 hover:-translate-y-1 hover:shadow-xl transition-all duration-300"
+             data-name="Rahim Hasan" data-category="ac" data-price="45" data-rating="4.8" data-verified="true">
+          <div class="w-full aspect-[4/3] rounded-xl bg-gradient-to-br from-sky-100 to-blue-100 border border-slate-200/60 flex items-center justify-center mb-4">
+            <i data-lucide="image" class="w-8 h-8 text-sky-300"></i>
+          </div>
+          <div class="flex items-start justify-between mb-2">
+            <div>
+              <p class="text-sm font-bold text-slate-900">Rahim Hasan</p>
+              <p class="text-xs text-slate-400">AC Technician</p>
+            </div>
+            <span class="font-heading font-bold text-primary text-sm">$45<span class="text-xs text-slate-400 font-normal">/hr</span></span>
+          </div>
+          <div class="flex flex-wrap gap-1.5 mb-3">
+            <span class="inline-flex items-center gap-1 text-[11px] font-semibold bg-emerald-50 text-emerald-600 px-2 py-1 rounded-full"><i data-lucide="badge-check" class="w-3 h-3"></i> Verified Pro</span>
+            <span class="inline-flex items-center gap-1 text-[11px] font-semibold bg-rose-50 text-rose-500 px-2 py-1 rounded-full"><i data-lucide="clock" class="w-3 h-3"></i> 24/7 Emergency</span>
+          </div>
+          <div class="flex items-center gap-1 text-amber-400 mb-4">
+            <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+            <span class="text-xs font-semibold text-slate-500 ml-1">4.8 (312)</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <a href="/provider-profile" class="text-center border border-slate-200 text-slate-600 text-xs font-bold py-2.5 rounded-xl hover:bg-slate-50 transition-colors">View Profile</a>
+            <a href="/provider-profile" class="text-center bg-gradient-to-r from-primary to-indigo-600 text-white text-xs font-bold py-2.5 rounded-xl hover:-translate-y-0.5 transition-all duration-300 shadow-md shadow-primary/30">Book Now</a>
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="provider-card bg-white rounded-2xl shadow-lg border border-slate-200/60 p-5 hover:-translate-y-1 hover:shadow-xl transition-all duration-300"
+             data-name="Karim Uddin" data-category="electrician" data-price="35" data-rating="4.6" data-verified="true">
+          <div class="w-full aspect-[4/3] rounded-xl bg-gradient-to-br from-amber-100 to-orange-100 border border-slate-200/60 flex items-center justify-center mb-4">
+            <i data-lucide="image" class="w-8 h-8 text-amber-300"></i>
+          </div>
+          <div class="flex items-start justify-between mb-2">
+            <div>
+              <p class="text-sm font-bold text-slate-900">Karim Uddin</p>
+              <p class="text-xs text-slate-400">Electrician</p>
+            </div>
+            <span class="font-heading font-bold text-primary text-sm">$35<span class="text-xs text-slate-400 font-normal">/hr</span></span>
+          </div>
+          <div class="flex flex-wrap gap-1.5 mb-3">
+            <span class="inline-flex items-center gap-1 text-[11px] font-semibold bg-emerald-50 text-emerald-600 px-2 py-1 rounded-full"><i data-lucide="badge-check" class="w-3 h-3"></i> Verified Pro</span>
+            <span class="inline-flex items-center gap-1 text-[11px] font-semibold bg-primary/10 text-primary px-2 py-1 rounded-full"><i data-lucide="zap" class="w-3 h-3"></i> Master Electrician</span>
+          </div>
+          <div class="flex items-center gap-1 text-amber-400 mb-4">
+            <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 text-slate-200 fill-slate-200"></i>
+            <span class="text-xs font-semibold text-slate-500 ml-1">4.6 (198)</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <a href="/provider-profile" class="text-center border border-slate-200 text-slate-600 text-xs font-bold py-2.5 rounded-xl hover:bg-slate-50 transition-colors">View Profile</a>
+            <a href="/provider-profile" class="text-center bg-gradient-to-r from-primary to-indigo-600 text-white text-xs font-bold py-2.5 rounded-xl hover:-translate-y-0.5 transition-all duration-300 shadow-md shadow-primary/30">Book Now</a>
+          </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="provider-card bg-white rounded-2xl shadow-lg border border-slate-200/60 p-5 hover:-translate-y-1 hover:shadow-xl transition-all duration-300"
+             data-name="Fahim Rahman" data-category="plumber" data-price="40" data-rating="4.5" data-verified="true">
+          <div class="w-full aspect-[4/3] rounded-xl bg-gradient-to-br from-cyan-100 to-teal-100 border border-slate-200/60 flex items-center justify-center mb-4">
+            <i data-lucide="image" class="w-8 h-8 text-teal-300"></i>
+          </div>
+          <div class="flex items-start justify-between mb-2">
+            <div>
+              <p class="text-sm font-bold text-slate-900">Fahim Rahman</p>
+              <p class="text-xs text-slate-400">Plumber</p>
+            </div>
+            <span class="font-heading font-bold text-primary text-sm">$40<span class="text-xs text-slate-400 font-normal">/hr</span></span>
+          </div>
+          <div class="flex flex-wrap gap-1.5 mb-3">
+            <span class="inline-flex items-center gap-1 text-[11px] font-semibold bg-emerald-50 text-emerald-600 px-2 py-1 rounded-full"><i data-lucide="badge-check" class="w-3 h-3"></i> Verified Pro</span>
+            <span class="inline-flex items-center gap-1 text-[11px] font-semibold bg-rose-50 text-rose-500 px-2 py-1 rounded-full"><i data-lucide="clock" class="w-3 h-3"></i> 24/7 Emergency</span>
+          </div>
+          <div class="flex items-center gap-1 text-amber-400 mb-4">
+            <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 text-slate-200 fill-slate-200"></i>
+            <span class="text-xs font-semibold text-slate-500 ml-1">4.5 (156)</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <a href="/provider-profile" class="text-center border border-slate-200 text-slate-600 text-xs font-bold py-2.5 rounded-xl hover:bg-slate-50 transition-colors">View Profile</a>
+            <a href="/provider-profile" class="text-center bg-gradient-to-r from-primary to-indigo-600 text-white text-xs font-bold py-2.5 rounded-xl hover:-translate-y-0.5 transition-all duration-300 shadow-md shadow-primary/30">Book Now</a>
+          </div>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="provider-card bg-white rounded-2xl shadow-lg border border-slate-200/60 p-5 hover:-translate-y-1 hover:shadow-xl transition-all duration-300"
+             data-name="CoolTech Services" data-category="ac" data-price="55" data-rating="4.6" data-verified="true">
+          <div class="w-full aspect-[4/3] rounded-xl bg-gradient-to-br from-sky-100 to-blue-100 border border-slate-200/60 flex items-center justify-center mb-4">
+            <i data-lucide="image" class="w-8 h-8 text-sky-300"></i>
+          </div>
+          <div class="flex items-start justify-between mb-2">
+            <div>
+              <p class="text-sm font-bold text-slate-900">CoolTech Services</p>
+              <p class="text-xs text-slate-400">AC Technician</p>
+            </div>
+            <span class="font-heading font-bold text-primary text-sm">$55<span class="text-xs text-slate-400 font-normal">/hr</span></span>
+          </div>
+          <div class="flex flex-wrap gap-1.5 mb-3">
+            <span class="inline-flex items-center gap-1 text-[11px] font-semibold bg-emerald-50 text-emerald-600 px-2 py-1 rounded-full"><i data-lucide="badge-check" class="w-3 h-3"></i> Verified Pro</span>
+            <span class="inline-flex items-center gap-1 text-[11px] font-semibold bg-teal-50 text-teal-600 px-2 py-1 rounded-full"><i data-lucide="calendar" class="w-3 h-3"></i> Annual Contracts</span>
+          </div>
+          <div class="flex items-center gap-1 text-amber-400 mb-4">
+            <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 text-slate-200 fill-slate-200"></i>
+            <span class="text-xs font-semibold text-slate-500 ml-1">4.6 (204)</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <a href="/provider-profile" class="text-center border border-slate-200 text-slate-600 text-xs font-bold py-2.5 rounded-xl hover:bg-slate-50 transition-colors">View Profile</a>
+            <a href="/provider-profile" class="text-center bg-gradient-to-r from-primary to-indigo-600 text-white text-xs font-bold py-2.5 rounded-xl hover:-translate-y-0.5 transition-all duration-300 shadow-md shadow-primary/30">Book Now</a>
+          </div>
+        </div>
+
+        <!-- Card 5 -->
+        <div class="provider-card bg-white rounded-2xl shadow-lg border border-slate-200/60 p-5 hover:-translate-y-1 hover:shadow-xl transition-all duration-300"
+             data-name="CleanPro Team" data-category="cleaner" data-price="30" data-rating="4.9" data-verified="true">
+          <div class="w-full aspect-[4/3] rounded-xl bg-gradient-to-br from-emerald-100 to-green-100 border border-slate-200/60 flex items-center justify-center mb-4">
+            <i data-lucide="image" class="w-8 h-8 text-emerald-300"></i>
+          </div>
+          <div class="flex items-start justify-between mb-2">
+            <div>
+              <p class="text-sm font-bold text-slate-900">CleanPro Team</p>
+              <p class="text-xs text-slate-400">Cleaner</p>
+            </div>
+            <span class="font-heading font-bold text-primary text-sm">$30<span class="text-xs text-slate-400 font-normal">/hr</span></span>
+          </div>
+          <div class="flex flex-wrap gap-1.5 mb-3">
+            <span class="inline-flex items-center gap-1 text-[11px] font-semibold bg-emerald-50 text-emerald-600 px-2 py-1 rounded-full"><i data-lucide="badge-check" class="w-3 h-3"></i> Verified Pro</span>
+            <span class="inline-flex items-center gap-1 text-[11px] font-semibold bg-teal-50 text-teal-600 px-2 py-1 rounded-full"><i data-lucide="sparkles" class="w-3 h-3"></i> Deep Cleaning</span>
+          </div>
+          <div class="flex items-center gap-1 text-amber-400 mb-4">
+            <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+            <span class="text-xs font-semibold text-slate-500 ml-1">4.9 (267)</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <a href="/provider-profile" class="text-center border border-slate-200 text-slate-600 text-xs font-bold py-2.5 rounded-xl hover:bg-slate-50 transition-colors">View Profile</a>
+            <a href="/provider-profile" class="text-center bg-gradient-to-r from-primary to-indigo-600 text-white text-xs font-bold py-2.5 rounded-xl hover:-translate-y-0.5 transition-all duration-300 shadow-md shadow-primary/30">Book Now</a>
+          </div>
+        </div>
+
+        <!-- Card 6 -->
+        <div class="provider-card bg-white rounded-2xl shadow-lg border border-slate-200/60 p-5 hover:-translate-y-1 hover:shadow-xl transition-all duration-300"
+             data-name="Sonar Motors" data-category="mechanic" data-price="50" data-rating="4.3" data-verified="false">
+          <div class="w-full aspect-[4/3] rounded-xl bg-gradient-to-br from-orange-100 to-red-100 border border-slate-200/60 flex items-center justify-center mb-4">
+            <i data-lucide="image" class="w-8 h-8 text-orange-300"></i>
+          </div>
+          <div class="flex items-start justify-between mb-2">
+            <div>
+              <p class="text-sm font-bold text-slate-900">Sonar Motors</p>
+              <p class="text-xs text-slate-400">Mechanic</p>
+            </div>
+            <span class="font-heading font-bold text-primary text-sm">$50<span class="text-xs text-slate-400 font-normal">/hr</span></span>
+          </div>
+          <div class="flex flex-wrap gap-1.5 mb-3">
+            <span class="inline-flex items-center gap-1 text-[11px] font-semibold bg-amber-50 text-amber-600 px-2 py-1 rounded-full"><i data-lucide="clock" class="w-3 h-3"></i> Pending Verification</span>
+            <span class="inline-flex items-center gap-1 text-[11px] font-semibold bg-teal-50 text-teal-600 px-2 py-1 rounded-full"><i data-lucide="car" class="w-3 h-3"></i> Engine Diagnostics</span>
+          </div>
+          <div class="flex items-center gap-1 text-amber-400 mb-4">
+            <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 text-slate-200 fill-slate-200"></i><i data-lucide="star" class="w-4 h-4 text-slate-200 fill-slate-200"></i>
+            <span class="text-xs font-semibold text-slate-500 ml-1">4.3 (89)</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <a href="/provider-profile" class="text-center border border-slate-200 text-slate-600 text-xs font-bold py-2.5 rounded-xl hover:bg-slate-50 transition-colors">View Profile</a>
+            <a href="/provider-profile" class="text-center bg-gradient-to-r from-primary to-indigo-600 text-white text-xs font-bold py-2.5 rounded-xl hover:-translate-y-0.5 transition-all duration-300 shadow-md shadow-primary/30">Book Now</a>
+          </div>
+        </div>
+
+      </div>
+
+      <p id="empty-state" class="hidden text-center py-20 text-slate-400 text-sm">
+        <i data-lucide="search-x" class="w-10 h-10 mx-auto mb-3 text-slate-300"></i>
+        No providers match your filters. Try widening your search.
+      </p>
+    </main>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    // ---- Modular toast utility (shared pattern across FixMate pages) ----
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const styles = {
+        success: { bg: 'bg-emerald-500', icon: 'check-circle' },
+        error:   { bg: 'bg-rose-500',    icon: 'x-circle' },
+        info:    { bg: 'bg-primary',     icon: 'info' }
+      };
+      const s = styles[type] || styles.info;
+      const toast = document.createElement('div');
+      toast.className = `toast-in flex items-center gap-2 text-white text-sm font-semibold px-4 py-3 rounded-xl shadow-lg ${s.bg}`;
+      toast.innerHTML = `<i data-lucide="${s.icon}" class="w-4 h-4"></i><span>${message}</span>`;
+      container.appendChild(toast);
+      lucide.createIcons();
+      setTimeout(() => {
+        toast.classList.remove('toast-in');
+        toast.classList.add('toast-out');
+        setTimeout(() => toast.remove(), 250);
+      }, 3000);
+    }
+
+    // ---- Live filter logic ----
+    const priceRange = document.getElementById('price-range');
+    const priceOutput = document.getElementById('price-output');
+    const verifiedOnly = document.getElementById('verified-only');
+    const categoryFilters = document.querySelectorAll('.category-filter');
+    const ratingFilters = document.querySelectorAll('.rating-filter');
+    const cards = document.querySelectorAll('.provider-card');
+    const resultCount = document.getElementById('result-count');
+    const emptyState = document.getElementById('empty-state');
+    const sortSelect = document.getElementById('sort-select');
+    const grid = document.getElementById('provider-grid');
+
+    function getSelectedCategories() {
+      return Array.from(categoryFilters).filter(c => c.checked).map(c => c.value);
+    }
+    function getSelectedRating() {
+      const checked = document.querySelector('.rating-filter:checked');
+      return checked ? parseFloat(checked.value) : 0;
+    }
+
+    function filterCards() {
+      const maxPrice = parseInt(priceRange.value, 10);
+      const selectedCategories = getSelectedCategories();
+      const minRating = getSelectedRating();
+      const mustBeVerified = verifiedOnly.checked;
+
+      let visibleCount = 0;
+
+      cards.forEach(card => {
+        const category = card.dataset.category;
+        const price = parseInt(card.dataset.price, 10);
+        const rating = parseFloat(card.dataset.rating);
+        const verified = card.dataset.verified === 'true';
+
+        const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(category);
+        const matchesPrice = price <= maxPrice;
+        const matchesRating = rating >= minRating;
+        const matchesVerified = !mustBeVerified || verified;
+
+        const isMatch = matchesCategory && matchesPrice && matchesRating && matchesVerified;
+        card.classList.toggle('hidden', !isMatch);
+        if (isMatch) visibleCount++;
+      });
+
+      resultCount.textContent = `Showing ${visibleCount} of ${cards.length} providers`;
+      emptyState.classList.toggle('hidden', visibleCount !== 0);
+      sortCards();
+    }
+
+    function sortCards() {
+      const visibleCards = Array.from(cards).filter(c => !c.classList.contains('hidden'));
+      const sortBy = sortSelect.value;
+
+      visibleCards.sort((a, b) => {
+        if (sortBy === 'rating') return parseFloat(b.dataset.rating) - parseFloat(a.dataset.rating);
+        if (sortBy === 'price-asc') return parseInt(a.dataset.price, 10) - parseInt(b.dataset.price, 10);
+        if (sortBy === 'price-desc') return parseInt(b.dataset.price, 10) - parseInt(a.dataset.price, 10);
+        return 0;
+      });
+
+      visibleCards.forEach(card => grid.appendChild(card));
+    }
+
+    // Live filtering: fires immediately when a checkbox or the price slider changes
+    priceRange.addEventListener('input', () => {
+      priceOutput.textContent = `$${priceRange.value}/hr`;
+      filterCards();
+    });
+    categoryFilters.forEach(cb => cb.addEventListener('change', filterCards));
+    ratingFilters.forEach(rb => rb.addEventListener('change', filterCards));
+    verifiedOnly.addEventListener('change', filterCards);
+    sortSelect.addEventListener('change', sortCards);
+
+    document.getElementById('reset-filters').addEventListener('click', () => {
+      priceRange.value = 150;
+      priceOutput.textContent = '$150/hr';
+      verifiedOnly.checked = false;
+      categoryFilters.forEach(cb => cb.checked = true);
+      document.querySelector('.rating-filter[value="0"]').checked = true;
+      filterCards();
+      showToast('Filters reset', 'info');
+    });
+
+    filterCards(); // initial run
+  </script>
+
+</body>
+</html>
