@@ -1,0 +1,6 @@
+{
+  "name": "FixMate",
+  "description": "Hyper-Local Services Marketplace Platform connecting customers with verified local service providers with booking, online payments, and automated commission ledger.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
