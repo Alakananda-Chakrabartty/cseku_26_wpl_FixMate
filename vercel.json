@@ -4,7 +4,7 @@
   "outputDirectory": "dist",
   "functions": {
     "api/[...path].ts": {
-      "includeFiles": "schema.sql"
+      "includeFiles": "{schema.sql,server/**/*.ts}"
     }
   },
   "rewrites": [
