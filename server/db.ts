@@ -40,7 +40,7 @@ export async function getDb(): Promise<DatabaseClient> {
 
   const pool = new pg.Pool(
     connectionString
-      ? { connectionString }
+      ? { connectionString, ssl: { rejectUnauthorized: false } }
       : {
           host: process.env.SQL_HOST,
           user: process.env.SQL_USER,

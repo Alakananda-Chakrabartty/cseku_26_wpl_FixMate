@@ -95,6 +95,30 @@ FixMate needs a Node.js web service and a persistent PostgreSQL database; do not
 
 Hosting and database providers may charge for production services. Check their current plans before creating resources. Google Search Console helps Google discover the site; it does not host it, and indexing can take time.
 
+## Deploy to Vercel + Neon
+
+The Vite frontend is deployed as static output and `/api/*` is handled by an Express serverless function. Both use the same Vercel domain, so `VITE_API_URL` can remain unset and defaults to `/api`.
+
+1. Create a PostgreSQL project in Neon and copy its pooled connection string. Keep it private.
+2. Push this project to GitHub without committing `.env`, then import its repository into Vercel. Vercel assigns a free `*.vercel.app` domain.
+3. In Vercel **Project Settings → Environment Variables**, add these for Production (and Preview too if needed):
+
+   | Name | Value |
+   | --- | --- |
+   | `DATABASE_URL` | Neon pooled connection string |
+   | `JWT_SECRET` | Unique random secret generated locally |
+   | `APP_URL` | Your assigned `https://<project-name>.vercel.app` URL |
+   | `ADMIN_EMAIL` | Optional admin email |
+   | `ADMIN_PASSWORD` | Optional admin password, at least 7 characters |
+   | `GMAIL_USER` | Gmail address used for verification |
+   | `GMAIL_APP_PASSWORD` | Google App Password |
+
+   Gmail variables are required for email verification. Do not enter secrets in `VITE_*` variables or commit them to Git.
+4. Redeploy after setting variables. Open `https://<project-name>.vercel.app/api/health` and confirm it returns JSON with `"status":"ok"`.
+5. Test registration, verification emails, login, and the admin dashboard. The API applies the schema and seed data when it first connects to Neon.
+
+Vercel and Neon free plans have usage limits. Vercel serverless request-size limits may also make large document uploads unsuitable without external object storage.
+
 ## Other Commands
 
 ```bash

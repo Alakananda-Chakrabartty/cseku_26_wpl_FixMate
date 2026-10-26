@@ -1,7 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fixmate_jwt_super_secret_production_key_2026';
+const JWT_SECRET = process.env.JWT_SECRET || (
+  process.env.NODE_ENV === 'production'
+    ? (() => {
+        throw new Error('JWT_SECRET must be configured in production.');
+      })()
+    : 'fixmate_local_development_secret'
+);
 
 export interface AuthPayload {
   id: number;
