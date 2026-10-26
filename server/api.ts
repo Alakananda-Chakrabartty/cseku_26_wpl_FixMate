@@ -1,4 +1,5 @@
-import { Router, Response } from 'express';
+import { Router } from 'express';
+import type { Response } from 'express';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { getDb, calculateDistanceKm } from './db.ts';
@@ -12,8 +13,8 @@ import {
   authenticateToken,
   requireRole,
   generateToken,
-  AuthenticatedRequest,
 } from './auth.ts';
+import type { AuthenticatedRequest } from './auth.ts';
 
 const router = Router();
 
