@@ -127,8 +127,7 @@ CREATE TABLE IF NOT EXISTS bookings (
     service_address TEXT NOT NULL,
     customer_phone VARCHAR(50) NOT NULL,
     notes TEXT,
-    agreed_price DECIMAL(10, 2) NOT NULL,
-    status VARCHAR(50) DEFAULT 'requested' CHECK (status IN ('requested', 'accepted', 'declined', 'paid_confirmed', 'in_progress', 'completed', 'cancelled')),
+    status VARCHAR(50) DEFAULT 'requested',
     cancelled_reason TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -136,34 +135,23 @@ CREATE TABLE IF NOT EXISTS bookings (
     CONSTRAINT unique_active_provider_slot UNIQUE (provider_id, booking_date, time_slot, status)
 );
 
--- 6. PAYMENTS TABLE (SSLCommerz / MFS bKash / Nagad)
-CREATE TABLE IF NOT EXISTS payments (
-    id SERIAL PRIMARY KEY,
-    booking_id INTEGER NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
-    transaction_id VARCHAR(100) UNIQUE NOT NULL,
-    payment_method VARCHAR(50) NOT NULL, -- 'SSLCommerz', 'bKash', 'Nagad'
-    amount DECIMAL(10, 2) NOT NULL,
-    currency VARCHAR(10) DEFAULT 'BDT',
-    status VARCHAR(50) DEFAULT 'success' CHECK (status IN ('pending', 'success', 'failed', 'refunded')),
-    payment_details JSONB,
-    paid_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
+-- Migrate legacy escrow/completion states while retaining old payment records.
+ALTER TABLE bookings DROP CONSTRAINT IF EXISTS bookings_status_check;
+UPDATE bookings SET status = 'in_progress' WHERE status IN ('paid_confirmed', 'completed');
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'bookings' AND column_name = 'agreed_price'
+    ) THEN
+        ALTER TABLE bookings ALTER COLUMN agreed_price DROP NOT NULL;
+    END IF;
+END $$;
+ALTER TABLE bookings
+    ADD CONSTRAINT bookings_status_check
+    CHECK (status IN ('requested', 'accepted', 'declined', 'in_progress', 'cancelled'));
 
--- 7. TRANSACTION LEDGERS TABLE (Automated Platform Commission Split)
-CREATE TABLE IF NOT EXISTS transaction_ledgers (
-    id SERIAL PRIMARY KEY,
-    booking_id INTEGER NOT NULL REFERENCES bookings(id),
-    payment_id INTEGER NOT NULL REFERENCES payments(id),
-    provider_id INTEGER NOT NULL REFERENCES provider_profiles(id),
-    gross_amount DECIMAL(10, 2) NOT NULL,
-    commission_percentage DECIMAL(5, 2) NOT NULL,
-    platform_commission DECIMAL(10, 2) NOT NULL,
-    net_provider_payout DECIMAL(10, 2) NOT NULL,
-    payout_status VARCHAR(50) DEFAULT 'held' CHECK (payout_status IN ('held', 'eligible', 'paid_out')),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
--- 8. REVIEWS TABLE (Restricted to Completed Bookings only)
+-- 6. REVIEWS TABLE (one review per booking after its scheduled date)
 CREATE TABLE IF NOT EXISTS reviews (
     id SERIAL PRIMARY KEY,
     booking_id INTEGER UNIQUE NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
@@ -174,16 +162,7 @@ CREATE TABLE IF NOT EXISTS reviews (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- 9. PLATFORM SETTINGS TABLE (Global Commission & System Configuration)
-CREATE TABLE IF NOT EXISTS platform_settings (
-    id SERIAL PRIMARY KEY,
-    key VARCHAR(100) UNIQUE NOT NULL,
-    value VARCHAR(255) NOT NULL,
-    description TEXT,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
--- 10. DISPUTES TABLE (Customer/Provider Issues Managed by Admin)
+-- 7. DISPUTES TABLE (Customer/Provider Issues Managed by Admin)
 CREATE TABLE IF NOT EXISTS disputes (
     id SERIAL PRIMARY KEY,
     booking_id INTEGER NOT NULL REFERENCES bookings(id),
@@ -208,19 +187,12 @@ CREATE INDEX IF NOT EXISTS idx_provider_profiles_lat_lon ON provider_profiles(la
 CREATE INDEX IF NOT EXISTS idx_bookings_provider_date_slot ON bookings(provider_id, booking_date, time_slot);
 CREATE INDEX IF NOT EXISTS idx_bookings_customer ON bookings(customer_id);
 CREATE INDEX IF NOT EXISTS idx_bookings_status ON bookings(status);
-CREATE INDEX IF NOT EXISTS idx_payments_booking ON payments(booking_id);
 CREATE INDEX IF NOT EXISTS idx_reviews_provider ON reviews(provider_id);
-CREATE INDEX IF NOT EXISTS idx_transaction_ledgers_provider ON transaction_ledgers(provider_id);
 
 -- ======================================================================
 -- INITIAL SEED DATA
 -- 7Nanda2 bcrypt hash: $2b$10$RE.07qzTL2lMQMOjnuB8/.6VR3ASmJg98a1wovo9/dvZ8LjNoikTu
 -- ======================================================================
-
--- Platform Settings Seed
-INSERT INTO platform_settings (key, value, description)
-VALUES ('global_commission_percentage', '12.5', 'Global platform commission percentage deducted from gross bookings')
-ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
 
 INSERT INTO categories (name, slug, icon, description)
 VALUES

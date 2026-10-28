@@ -64,6 +64,7 @@ export interface ProviderProfile {
 
 export interface ProviderSubscriptionReview {
   provider_id: number;
+  user_id: number;
   provider_name: string;
   provider_email: string;
   provider_phone?: string;
@@ -100,9 +101,7 @@ export type BookingStatus =
   | 'requested'
   | 'accepted'
   | 'declined'
-  | 'paid_confirmed'
   | 'in_progress'
-  | 'completed'
   | 'cancelled';
 
 export interface Booking {
@@ -116,7 +115,7 @@ export interface Booking {
   service_address: string;
   customer_phone: string;
   notes?: string;
-  agreed_price: number;
+  provider_starting_price: number;
   status: BookingStatus;
   cancelled_reason?: string;
   created_at: string;
@@ -124,62 +123,16 @@ export interface Booking {
   category_name?: string;
   customer_name?: string;
   customer_contact?: string;
+  customer_email?: string;
   customer_avatar?: string;
+  customer_account_created_at?: string;
   provider_name?: string;
   provider_contact?: string;
   provider_avatar?: string;
   provider_service_area?: string;
   provider_is_verified?: boolean;
-  transaction_id?: string;
-  payment_method?: string;
-  payment_status?: string;
-  paid_at?: string;
   user_rating?: number;
   user_review_comment?: string;
-}
-
-export interface TransactionLedger {
-  id: number;
-  booking_id: number;
-  payment_id: number;
-  provider_id: number;
-  gross_amount: number;
-  commission_percentage: number;
-  platform_commission: number;
-  net_provider_payout: number;
-  payout_status: 'held' | 'eligible' | 'paid_out';
-  created_at: string;
-  booking_reference?: string;
-  booking_date?: string;
-  booking_status?: string;
-  category_name?: string;
-  payment_method?: string;
-  transaction_id?: string;
-  customer_name?: string;
-  provider_name?: string;
-  provider_service_area?: string;
-}
-
-export interface DigitalReceipt {
-  receipt_id: string;
-  booking_reference: string;
-  booking_date: string;
-  time_slot: string;
-  service_address: string;
-  booking_status: string;
-  service_name: string;
-  customer_name: string;
-  customer_phone: string;
-  provider_name: string;
-  provider_area: string;
-  transaction_id: string;
-  payment_method: string;
-  paid_at: string;
-  gross_amount: number;
-  commission_percentage: number;
-  platform_commission: number;
-  net_provider_payout: number;
-  payout_status: string;
 }
 
 export interface Review {
@@ -199,12 +152,6 @@ export interface AdminAnalytics {
   verified_providers_count: number;
   pending_verifications_count: number;
   bookings_by_status: Array<{ status: string; count: string }>;
-  finance: {
-    total_gmv: number;
-    total_commission: number;
-    total_provider_payouts: number;
-  };
-  current_commission_percentage: number;
 }
 
 export interface AdminUser {
@@ -213,4 +160,21 @@ export interface AdminUser {
   role: UserRole;
   full_name: string;
   email_verified: boolean;
+  phone?: string | null;
+  avatar_url?: string | null;
+  created_at?: string;
+  provider_category?: string | null;
+  provider_service_area?: string | null;
+  provider_service_areas?: string[] | null;
+  provider_base_location?: string | null;
+  provider_bio?: string | null;
+  provider_experience_years?: number | null;
+  provider_starting_price?: number | string | null;
+  provider_is_verified?: boolean | null;
+  provider_verification_status?: 'pending' | 'approved' | 'rejected' | null;
+  provider_subscription_status?: 'not_paid' | 'pending' | 'paid' | 'rejected' | null;
+  provider_subscription_method?: 'bKash' | 'Nagad' | null;
+  provider_subscription_transaction_id?: string | null;
+  provider_subscription_paid_at?: string | null;
+  provider_subscription_expires_at?: string | null;
 }

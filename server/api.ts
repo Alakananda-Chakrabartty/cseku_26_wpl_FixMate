@@ -1,5 +1,4 @@
-import { Router } from 'express';
-import type { Response } from 'express';
+import { Router, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { getDb, calculateDistanceKm } from './db.ts';
@@ -13,8 +12,8 @@ import {
   authenticateToken,
   requireRole,
   generateToken,
+  AuthenticatedRequest,
 } from './auth.ts';
-import type { AuthenticatedRequest } from './auth.ts';
 
 const router = Router();
 
@@ -96,6 +95,7 @@ router.get('/admin/subscriptions', authenticateToken, requireRole('admin'), asyn
     const subscriptionsRes = await db.query(
       `SELECT
          p.id AS provider_id,
+         u.id AS user_id,
          u.full_name AS provider_name,
          u.email AS provider_email,
          u.phone AS provider_phone,
@@ -111,8 +111,10 @@ router.get('/admin/subscriptions', authenticateToken, requireRole('admin'), asyn
        FROM provider_profiles p
        JOIN users u ON u.id = p.user_id
        JOIN categories c ON c.id = p.category_id
-       WHERE p.subscription_status = 'pending'
-       ORDER BY p.updated_at ASC`
+       WHERE p.subscription_status IN ('pending', 'paid', 'rejected')
+       ORDER BY
+         CASE p.subscription_status WHEN 'pending' THEN 0 WHEN 'paid' THEN 1 ELSE 2 END,
+         p.updated_at DESC`
     );
     res.json(subscriptionsRes.rows);
   } catch (error: any) {
@@ -1038,13 +1040,12 @@ router.post('/bookings', authenticateToken, requireRole('customer'), async (req:
       return;
     }
 
-    // 2. Fetch provider starting price for initial agreed price
-    const provRes = await db.query('SELECT starting_price, category_id FROM provider_profiles WHERE id = $1', [Number(provider_id)]);
+    // Resolve the provider's category; service pricing is agreed directly by the parties.
+    const provRes = await db.query('SELECT category_id FROM provider_profiles WHERE id = $1', [Number(provider_id)]);
     if (provRes.rows.length === 0) {
       res.status(404).json({ error: 'Selected provider does not exist.' });
       return;
     }
-    const agreedPrice = parseFloat(provRes.rows[0].starting_price);
     const catId = Number(category_id) || provRes.rows[0].category_id;
 
     // Generate readable reference code
@@ -1054,9 +1055,8 @@ router.post('/bookings', authenticateToken, requireRole('customer'), async (req:
     const newBookingRes = await db.query(
       `INSERT INTO bookings (
         booking_reference, customer_id, provider_id, category_id,
-        booking_date, time_slot, service_address, customer_phone, notes,
-        agreed_price, status
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'requested')
+        booking_date, time_slot, service_address, customer_phone, notes, status
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'requested')
       RETURNING *`,
       [
         bookingRef,
@@ -1068,7 +1068,6 @@ router.post('/bookings', authenticateToken, requireRole('customer'), async (req:
         service_address.trim(),
         customer_phone.trim(),
         notes?.trim() || null,
-        agreedPrice,
       ]
     );
 
@@ -1109,16 +1108,15 @@ router.get('/bookings', authenticateToken, async (req: AuthenticatedRequest, res
         c.name as category_name,
         u_cust.full_name as customer_name,
         u_cust.phone as customer_contact,
+        u_cust.email as customer_email,
         u_cust.avatar_url as customer_avatar,
+        u_cust.created_at as customer_account_created_at,
         u_prov.full_name as provider_name,
         u_prov.phone as provider_contact,
         u_prov.avatar_url as provider_avatar,
         p.service_area as provider_service_area,
+        p.starting_price as provider_starting_price,
         p.is_verified as provider_is_verified,
-        pay.transaction_id,
-        pay.payment_method,
-        pay.status as payment_status,
-        pay.paid_at,
         r.rating as user_rating,
         r.comment as user_review_comment
       FROM bookings b
@@ -1126,7 +1124,6 @@ router.get('/bookings', authenticateToken, async (req: AuthenticatedRequest, res
       JOIN users u_cust ON b.customer_id = u_cust.id
       JOIN provider_profiles p ON b.provider_id = p.id
       JOIN users u_prov ON p.user_id = u_prov.id
-      LEFT JOIN payments pay ON b.id = pay.booking_id
       LEFT JOIN reviews r ON b.id = r.booking_id
     `;
 
@@ -1156,7 +1153,7 @@ router.get('/bookings', authenticateToken, async (req: AuthenticatedRequest, res
 /**
  * PATCH /api/bookings/:id/status
  * State Machine transitions:
- * Requested -> Accepted / Declined -> Paid & Confirmed -> In Progress -> Completed / Cancelled
+ * Requested -> Accepted -> In Progress; requests may also be declined or cancelled.
  */
 router.patch('/bookings/:id/status', authenticateToken, async (req: AuthenticatedRequest, res): Promise<void> => {
   try {
@@ -1192,7 +1189,7 @@ router.patch('/bookings/:id/status', authenticateToken, async (req: Authenticate
 
     // State machine logic
     const currentStatus = booking.status;
-    const validStatuses = ['requested', 'accepted', 'declined', 'paid_confirmed', 'in_progress', 'completed', 'cancelled'];
+    const validStatuses = ['accepted', 'declined', 'in_progress', 'cancelled'];
 
     if (!validStatuses.includes(status)) {
       res.status(400).json({ error: `Invalid status: ${status}` });
@@ -1205,15 +1202,13 @@ router.patch('/bookings/:id/status', authenticateToken, async (req: Authenticate
       return;
     }
 
-    // Provider/Customer starting work: in_progress requires paid_confirmed
-    if (status === 'in_progress' && currentStatus !== 'paid_confirmed' && !isAdmin) {
-      res.status(400).json({ error: 'Booking must be paid and confirmed before starting work.' });
+    if (status === 'in_progress' && currentStatus !== 'accepted' && !isAdmin) {
+      res.status(400).json({ error: 'Only an accepted booking can be started.' });
       return;
     }
 
-    // Completing job: completed requires in_progress or paid_confirmed
-    if (status === 'completed' && !['in_progress', 'paid_confirmed'].includes(currentStatus) && !isAdmin) {
-      res.status(400).json({ error: 'Cannot complete a booking that has not been confirmed or started.' });
+    if (status === 'in_progress' && !isProvider && !isAdmin) {
+      res.status(403).json({ error: 'Only the service provider can start the service.' });
       return;
     }
 
@@ -1228,259 +1223,9 @@ router.patch('/bookings/:id/status', authenticateToken, async (req: Authenticate
       [status, cancelled_reason?.trim() || null, Number(id)]
     );
 
-    // If completed, make the transaction ledger payout status 'eligible' for provider withdrawal
-    if (status === 'completed') {
-      await db.query(`UPDATE transaction_ledgers SET payout_status = 'eligible' WHERE booking_id = $1`, [Number(id)]);
-    }
-
     res.json({
       message: `Booking status updated to ${status}`,
       booking: updateRes.rows[0],
-    });
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// ======================================================================
-// MODULE E: PAYMENT & AUTOMATED COMMISSION ENGINE
-// ======================================================================
-
-/**
- * POST /api/payments/checkout
- * Require successful online payment before confirming bookings.
- * Auto-calculates platform commission percentage (retrieved from platform_settings).
- * Creates ledger entry splitting: (1) Platform Commission, (2) Provider Net Payout Balance.
- * Generates digital receipt itemizing Gross Amount, Platform Fee, Net Provider Earning.
- */
-router.post('/payments/checkout', authenticateToken, requireRole('customer'), async (req: AuthenticatedRequest, res): Promise<void> => {
-  try {
-    const { booking_id, payment_method, account_number, notes } = req.body;
-
-    if (!booking_id || !payment_method) {
-      res.status(400).json({ error: 'Booking ID and payment method are required.' });
-      return;
-    }
-
-    const validMethods = ['SSLCommerz', 'bKash', 'Nagad'];
-    if (!validMethods.includes(payment_method)) {
-      res.status(400).json({ error: `Supported payment methods: ${validMethods.join(', ')}` });
-      return;
-    }
-
-    const db = await getDb();
-
-    // Fetch booking
-    const bkRes = await db.query(
-      `SELECT b.*, p.id as provider_id, u.full_name as provider_name
-       FROM bookings b
-       JOIN provider_profiles p ON b.provider_id = p.id
-       JOIN users u ON p.user_id = u.id
-       WHERE b.id = $1 AND b.customer_id = $2`,
-      [Number(booking_id), req.user!.id]
-    );
-
-    if (bkRes.rows.length === 0) {
-      res.status(404).json({ error: 'Booking not found or not owned by you.' });
-      return;
-    }
-
-    const booking = bkRes.rows[0];
-
-    // Must be in 'accepted' status
-    if (booking.status !== 'accepted') {
-      res.status(400).json({
-        error: `Cannot pay for a booking in '${booking.status}' state. Provider must accept the request first.`,
-      });
-      return;
-    }
-
-    // Check if already paid
-    const existingPay = await db.query('SELECT id FROM payments WHERE booking_id = $1 AND status = $2', [booking.id, 'success']);
-    if (existingPay.rows.length > 0) {
-      res.status(400).json({ error: 'This booking has already been paid and confirmed.' });
-      return;
-    }
-
-    const grossAmount = parseFloat(booking.agreed_price);
-
-    // Fetch global commission percentage configured by Admin
-    const settingRes = await db.query(`SELECT value FROM platform_settings WHERE key = 'global_commission_percentage'`);
-    const commissionPercent = settingRes.rows.length > 0 ? parseFloat(settingRes.rows[0].value) : 12.5;
-
-    // Automated platform commission calculations
-    const platformCommission = Math.round((grossAmount * (commissionPercent / 100)) * 100) / 100;
-    const netProviderPayout = Math.round((grossAmount - platformCommission) * 100) / 100;
-
-    // Generate unique transaction reference
-    const transactionId = `TXN-${payment_method.toUpperCase()}-${Math.floor(10000000 + Math.random() * 90000000)}`;
-
-    // Payment details payload
-    const paymentDetails = JSON.stringify({
-      gateway: payment_method === 'SSLCommerz' ? 'SSLCommerz Hosted Payment' : `${payment_method} Merchant Direct API`,
-      account: account_number ? `****${String(account_number).slice(-4)}` : 'Verified Wallet',
-      currency: 'BDT',
-      notes: notes || 'Instant payment authorization',
-      timestamp: new Date().toISOString(),
-    });
-
-    // 1. Insert into payments table
-    const payRes = await db.query(
-      `INSERT INTO payments (booking_id, transaction_id, payment_method, amount, currency, status, payment_details)
-       VALUES ($1, $2, $3, $4, 'BDT', 'success', $5) RETURNING *`,
-      [booking.id, transactionId, payment_method, grossAmount, paymentDetails]
-    );
-    const payment = payRes.rows[0];
-
-    // 2. Insert into transaction_ledgers table (Split: Platform Commission + Provider Net Payout)
-    const ledgerRes = await db.query(
-      `INSERT INTO transaction_ledgers (
-        booking_id, payment_id, provider_id, gross_amount,
-        commission_percentage, platform_commission, net_provider_payout, payout_status
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, 'held') RETURNING *`,
-      [booking.id, payment.id, booking.provider_id, grossAmount, commissionPercent, platformCommission, netProviderPayout]
-    );
-    const ledger = ledgerRes.rows[0];
-
-    // 3. Update booking status to 'paid_confirmed'
-    await db.query(`UPDATE bookings SET status = 'paid_confirmed', updated_at = CURRENT_TIMESTAMP WHERE id = $1`, [booking.id]);
-
-    // 4. Generate digital receipt
-    const receipt = {
-      receipt_id: `RCPT-${booking.booking_reference}`,
-      booking_reference: booking.booking_reference,
-      transaction_id: transactionId,
-      payment_method,
-      gross_amount: grossAmount,
-      currency: 'BDT',
-      commission_percentage: commissionPercent,
-      platform_fee: platformCommission,
-      net_provider_earning: netProviderPayout,
-      paid_at: payment.paid_at,
-      status: 'Paid & Confirmed',
-    };
-
-    res.status(200).json({
-      message: 'Payment completed successfully. Booking is now confirmed.',
-      payment,
-      ledger,
-      receipt,
-    });
-  } catch (error: any) {
-    console.error('Payment checkout error:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-/**
- * GET /api/bookings/:id/receipt
- * Generates digital receipt itemizing Gross Amount, Platform Fee, and Net Provider Earning.
- */
-router.get('/bookings/:id/receipt', authenticateToken, async (req: AuthenticatedRequest, res): Promise<void> => {
-  try {
-    const { id } = req.params;
-    const db = await getDb();
-
-    const sql = `
-      SELECT
-        b.booking_reference,
-        b.booking_date,
-        b.time_slot,
-        b.service_address,
-        b.status as booking_status,
-        c.name as service_name,
-        u_cust.full_name as customer_name,
-        u_cust.phone as customer_phone,
-        u_prov.full_name as provider_name,
-        p.service_area as provider_area,
-        pay.transaction_id,
-        pay.payment_method,
-        pay.paid_at,
-        l.gross_amount,
-        l.commission_percentage,
-        l.platform_commission,
-        l.net_provider_payout,
-        l.payout_status
-      FROM bookings b
-      JOIN categories c ON b.category_id = c.id
-      JOIN users u_cust ON b.customer_id = u_cust.id
-      JOIN provider_profiles p ON b.provider_id = p.id
-      JOIN users u_prov ON p.user_id = u_prov.id
-      JOIN payments pay ON b.id = pay.booking_id
-      JOIN transaction_ledgers l ON b.id = l.booking_id
-      WHERE b.id = $1
-    `;
-
-    const receiptRes = await db.query(sql, [Number(id)]);
-    if (receiptRes.rows.length === 0) {
-      res.status(404).json({ error: 'Receipt not found or booking is not yet paid.' });
-      return;
-    }
-
-    res.json(receiptRes.rows[0]);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-/**
- * GET /api/ledger/provider
- * Provider tracks earnings & payout ledger.
- */
-router.get('/ledger/provider', authenticateToken, requireRole('provider'), async (req: AuthenticatedRequest, res): Promise<void> => {
-  try {
-    const db = await getDb();
-    const provRes = await db.query('SELECT id FROM provider_profiles WHERE user_id = $1', [req.user!.id]);
-    if (provRes.rows.length === 0) {
-      res.status(404).json({ error: 'Provider profile not found.' });
-      return;
-    }
-    const providerId = provRes.rows[0].id;
-
-    const ledgerRes = await db.query(
-      `SELECT
-        l.*,
-        b.booking_reference,
-        b.booking_date,
-        b.status as booking_status,
-        c.name as category_name,
-        pay.payment_method,
-        pay.transaction_id
-       FROM transaction_ledgers l
-       JOIN bookings b ON l.booking_id = b.id
-       JOIN categories c ON b.category_id = c.id
-       JOIN payments pay ON l.payment_id = pay.id
-       WHERE l.provider_id = $1
-       ORDER BY l.created_at DESC`,
-      [providerId]
-    );
-
-    // Calculate totals
-    let totalGross = 0;
-    let totalCommissionDeducted = 0;
-    let totalNetEarnings = 0;
-    let availablePayout = 0;
-
-    for (const item of ledgerRes.rows) {
-      const gross = parseFloat(item.gross_amount);
-      const fee = parseFloat(item.platform_commission);
-      const net = parseFloat(item.net_provider_payout);
-      totalGross += gross;
-      totalCommissionDeducted += fee;
-      totalNetEarnings += net;
-      if (item.payout_status === 'eligible') {
-        availablePayout += net;
-      }
-    }
-
-    res.json({
-      summary: {
-        total_gross: totalGross,
-        total_commission_deducted: totalCommissionDeducted,
-        total_net_earnings: totalNetEarnings,
-        available_payout: availablePayout,
-      },
-      ledgers: ledgerRes.rows,
     });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
@@ -1493,7 +1238,7 @@ router.get('/ledger/provider', authenticateToken, requireRole('provider'), async
 
 /**
  * POST /api/reviews
- * Restrict reviews/ratings (1-5 stars) to Completed bookings only.
+ * Allow customers to rate accepted/in-progress bookings after the scheduled service date.
  * Auto-updates aggregate star ratings on provider profiles.
  */
 router.post('/reviews', authenticateToken, requireRole('customer'), async (req: AuthenticatedRequest, res): Promise<void> => {
@@ -1510,7 +1255,8 @@ router.post('/reviews', authenticateToken, requireRole('customer'), async (req: 
 
     // Verify booking belongs to user
     const bkRes = await db.query(
-      `SELECT * FROM bookings WHERE id = $1 AND customer_id = $2`,
+      `SELECT *, booking_date <= CURRENT_DATE AS review_eligible
+       FROM bookings WHERE id = $1 AND customer_id = $2`,
       [Number(booking_id), req.user!.id]
     );
 
@@ -1521,10 +1267,9 @@ router.post('/reviews', authenticateToken, requireRole('customer'), async (req: 
 
     const booking = bkRes.rows[0];
 
-    // Restrict strictly to completed bookings
-    if (booking.status !== 'completed') {
+    if (!['accepted', 'in_progress'].includes(booking.status) || !booking.review_eligible) {
       res.status(400).json({
-        error: `Only completed jobs can be rated and reviewed. Current booking status is '${booking.status}'.`,
+        error: 'You can rate this provider after the scheduled service date has passed.',
       });
       return;
     }
@@ -1584,26 +1329,11 @@ router.get('/admin/analytics', authenticateToken, requireRole('admin'), async (_
     const verifiedProvCountRes = await db.query(`SELECT COUNT(id) as count FROM provider_profiles WHERE is_verified = true`);
     const pendingVerifCountRes = await db.query(`SELECT COUNT(id) as count FROM verification_documents WHERE status = 'pending'`);
     const bookingsCountRes = await db.query(`SELECT status, COUNT(id) as count FROM bookings GROUP BY status`);
-    const financeRes = await db.query(`
-      SELECT
-        COALESCE(SUM(gross_amount), 0) as total_gmv,
-        COALESCE(SUM(platform_commission), 0) as total_commission,
-        COALESCE(SUM(net_provider_payout), 0) as total_provider_payouts
-      FROM transaction_ledgers
-    `);
-    const commissionSetting = await db.query(`SELECT value FROM platform_settings WHERE key = 'global_commission_percentage'`);
-
     res.json({
       users_by_role: usersCountRes.rows,
       verified_providers_count: parseInt(verifiedProvCountRes.rows[0]?.count || 0, 10),
       pending_verifications_count: parseInt(pendingVerifCountRes.rows[0]?.count || 0, 10),
       bookings_by_status: bookingsCountRes.rows,
-      finance: {
-        total_gmv: parseFloat(financeRes.rows[0]?.total_gmv || 0),
-        total_commission: parseFloat(financeRes.rows[0]?.total_commission || 0),
-        total_provider_payouts: parseFloat(financeRes.rows[0]?.total_provider_payouts || 0),
-      },
-      current_commission_percentage: parseFloat(commissionSetting.rows[0]?.value || 12.5),
     });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
@@ -1774,7 +1504,33 @@ router.get('/admin/users', authenticateToken, requireRole('admin'), async (_req:
   try {
     const db = await getDb();
     const usersRes = await db.query(
-      'SELECT id, email, role, full_name, email_verified FROM users ORDER BY created_at DESC'
+      `SELECT
+         u.id,
+         u.email,
+         u.role,
+         u.full_name,
+         u.email_verified,
+         u.phone,
+         u.avatar_url,
+         u.created_at,
+         c.name AS provider_category,
+         p.service_area AS provider_service_area,
+         p.service_areas AS provider_service_areas,
+         p.base_location_name AS provider_base_location,
+         p.bio AS provider_bio,
+         p.experience_years AS provider_experience_years,
+         p.starting_price AS provider_starting_price,
+         p.is_verified AS provider_is_verified,
+         p.verification_status AS provider_verification_status,
+         p.subscription_status AS provider_subscription_status,
+         p.subscription_method AS provider_subscription_method,
+         p.subscription_transaction_id AS provider_subscription_transaction_id,
+         p.subscription_paid_at AS provider_subscription_paid_at,
+         p.subscription_expires_at AS provider_subscription_expires_at
+       FROM users u
+       LEFT JOIN provider_profiles p ON p.user_id = u.id
+       LEFT JOIN categories c ON c.id = p.category_id
+       ORDER BY u.created_at DESC`
     );
     res.json(usersRes.rows);
   } catch (error: any) {
@@ -1783,96 +1539,49 @@ router.get('/admin/users', authenticateToken, requireRole('admin'), async (_req:
 });
 
 router.delete('/admin/users/:id', authenticateToken, requireRole('admin'), async (req: AuthenticatedRequest, res): Promise<void> => {
+  const userId = Number(req.params.id);
+  if (!Number.isInteger(userId) || userId < 1) {
+    res.status(400).json({ error: 'A valid user ID is required.' });
+    return;
+  }
+
   try {
     const db = await getDb();
-    const userRes = await db.query(
-      `DELETE FROM users WHERE id = $1 AND role <> 'admin' RETURNING id`,
-      [Number(req.params.id)]
+    const accountRes = await db.query(
+      `SELECT id, role FROM users WHERE id = $1 AND role <> 'admin'`,
+      [userId]
     );
-    if (userRes.rows.length === 0) {
+    if (accountRes.rows.length === 0) {
       res.status(404).json({ error: 'User not found or admin accounts cannot be deleted.' });
       return;
     }
-    res.json({ message: 'User account deleted.' });
-  } catch (error: any) {
-    res.status(500).json({ error: error.message || 'Could not delete user.' });
-  }
-});
 
-/**
- * GET /api/admin/settings & PUT /api/admin/settings
- * Admin updates global platform commission percentage.
- */
-router.get('/admin/settings', authenticateToken, requireRole('admin'), async (_req: AuthenticatedRequest, res): Promise<void> => {
-  try {
-    const db = await getDb();
-    const settings = await db.query('SELECT * FROM platform_settings');
-    res.json(settings.rows);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-});
+    const role = accountRes.rows[0].role;
 
-router.put('/admin/settings', authenticateToken, requireRole('admin'), async (req: AuthenticatedRequest, res): Promise<void> => {
-  try {
-    const { global_commission_percentage } = req.body;
-    const rate = parseFloat(global_commission_percentage);
+    if (role === 'provider') {
+      const providerRes = await db.query('SELECT id FROM provider_profiles WHERE user_id = $1', [userId]);
+      if (providerRes.rows.length > 0) {
+        const providerId = providerRes.rows[0].id;
+        await db.query('DELETE FROM reviews WHERE provider_id = $1', [providerId]);
+        await db.query('DELETE FROM disputes WHERE booking_id IN (SELECT id FROM bookings WHERE provider_id = $1)', [providerId]);
+        await db.query('DELETE FROM bookings WHERE provider_id = $1', [providerId]);
+      }
+    } else {
+      await db.query('DELETE FROM reviews WHERE customer_id = $1', [userId]);
+      await db.query('DELETE FROM disputes WHERE raised_by_user_id = $1 OR booking_id IN (SELECT id FROM bookings WHERE customer_id = $1)', [userId]);
+      await db.query('DELETE FROM bookings WHERE customer_id = $1', [userId]);
+    }
 
-    if (isNaN(rate) || rate < 0 || rate > 50) {
-      res.status(400).json({ error: 'Commission percentage must be between 0% and 50%.' });
+    const deletedRes = await db.query('DELETE FROM users WHERE id = $1 AND role <> \'admin\' RETURNING id', [userId]);
+    if (deletedRes.rows.length === 0) {
+      res.status(404).json({ error: 'User account could not be deleted.' });
       return;
     }
 
-    const db = await getDb();
-    await db.query(
-      `INSERT INTO platform_settings (key, value, description)
-       VALUES ('global_commission_percentage', $1, 'Global platform commission percentage')
-       ON CONFLICT (key) DO UPDATE SET value = $1, updated_at = CURRENT_TIMESTAMP`,
-      [rate.toString()]
-    );
-
-    res.json({
-      message: `Global platform commission updated to ${rate}%.`,
-      global_commission_percentage: rate,
-    });
+    res.json({ message: 'User account deleted.' });
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-/**
- * GET /api/admin/transactions
- * Admin monitors global transaction ledgers.
- */
-router.get('/admin/transactions', authenticateToken, requireRole('admin'), async (_req: AuthenticatedRequest, res): Promise<void> => {
-  try {
-    const db = await getDb();
-    const transactionsRes = await db.query(`
-      SELECT
-        l.*,
-        b.booking_reference,
-        b.booking_date,
-        b.status as booking_status,
-        c.name as category_name,
-        u_cust.full_name as customer_name,
-        u_prov.full_name as provider_name,
-        p.service_area as provider_service_area,
-        pay.payment_method,
-        pay.transaction_id,
-        pay.paid_at
-      FROM transaction_ledgers l
-      JOIN bookings b ON l.booking_id = b.id
-      JOIN categories c ON b.category_id = c.id
-      JOIN users u_cust ON b.customer_id = u_cust.id
-      JOIN provider_profiles p ON l.provider_id = p.id
-      JOIN users u_prov ON p.user_id = u_prov.id
-      JOIN payments pay ON l.payment_id = pay.id
-      ORDER BY l.created_at DESC
-    `);
-
-    res.json(transactionsRes.rows);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    console.error('Admin delete user error:', error);
+    res.status(500).json({ error: error.message || 'Could not delete user.' });
   }
 });
 

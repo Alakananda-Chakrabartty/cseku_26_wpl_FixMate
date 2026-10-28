@@ -3,7 +3,6 @@ import {
   ShieldCheck,
   Upload,
   Calendar,
-  DollarSign,
   Clock,
   CheckCircle2,
   XCircle,
@@ -11,14 +10,14 @@ import {
   FileCheck,
   AlertCircle,
   Plus,
-  TrendingUp,
   CreditCard,
   Briefcase,
   MapPin,
   Image as ImageIcon,
   Trash2,
+  X,
 } from 'lucide-react';
-import { ProviderProfile, Booking, TransactionLedger, VerificationDocument } from '../types.ts';
+import { ProviderProfile, Booking, VerificationDocument } from '../types.ts';
 import { api } from '../services/api.ts';
 import { useAuth } from '../context/AuthContext.tsx';
 import { MapsLocationPicker } from './MapsLocationPicker.tsx';
@@ -26,21 +25,12 @@ import { ServiceAreasEditor } from './ServiceAreasEditor.tsx';
 
 export const ProviderDashboard: React.FC = () => {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<'bookings' | 'ledger' | 'verification' | 'profile'>('bookings');
+  const [activeTab, setActiveTab] = useState<'bookings' | 'verification' | 'profile'>('bookings');
 
   const [profile, setProfile] = useState<ProviderProfile | null>(null);
   const [documents, setDocuments] = useState<VerificationDocument[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [ledgerData, setLedgerData] = useState<{
-    summary: {
-      total_gross: number;
-      total_commission_deducted: number;
-      total_net_earnings: number;
-      available_payout: number;
-    };
-    ledgers: TransactionLedger[];
-  } | null>(null);
-
+  const [selectedCustomerBooking, setSelectedCustomerBooking] = useState<Booking | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [bookingLoadError, setBookingLoadError] = useState<string>('');
   const [actionSuccess, setActionSuccess] = useState<string>('');
@@ -72,10 +62,9 @@ export const ProviderDashboard: React.FC = () => {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const [profResult, bookingsResult, ledgerResult] = await Promise.allSettled([
+      const [profResult, bookingsResult] = await Promise.allSettled([
         api.getProviderProfile(),
         api.getBookings(),
-        api.getProviderLedger(),
       ]);
 
       if (profResult.status === 'fulfilled') {
@@ -122,11 +111,6 @@ export const ProviderDashboard: React.FC = () => {
         );
       }
 
-      if (ledgerResult.status === 'fulfilled') {
-        setLedgerData(ledgerResult.value);
-      } else {
-        console.error('Failed to load provider ledger:', ledgerResult.reason);
-      }
     } finally {
       setIsLoading(false);
     }
@@ -149,7 +133,7 @@ export const ProviderDashboard: React.FC = () => {
 
   const handleUpdateBookingStatus = async (
     bookingId: number,
-    status: 'accepted' | 'declined' | 'in_progress' | 'completed'
+    status: 'accepted' | 'declined' | 'in_progress'
   ) => {
     try {
       await api.updateBookingStatus(bookingId, status);
@@ -200,6 +184,7 @@ export const ProviderDashboard: React.FC = () => {
         payment_method: subscriptionMethod,
         transaction_id: subscriptionTxId.trim(),
       });
+      setSubscriptionTxId('');
       setActionSuccess('Subscription payment proof submitted for admin verification.');
       setTimeout(() => setActionSuccess(''), 4000);
       await loadData();
@@ -248,9 +233,9 @@ export const ProviderDashboard: React.FC = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="mx-auto max-w-6xl px-3 py-5 sm:px-6 sm:py-8 lg:px-8">
       {/* Header Banner */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+      <div className="mb-6 flex flex-col items-start gap-4 rounded-3xl border border-slate-200 bg-white p-4 shadow-xs sm:mb-8 sm:flex-row sm:items-center sm:gap-6 sm:p-8">
         <div className="flex items-start gap-4">
           <img
             src={user?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'}
@@ -259,7 +244,7 @@ export const ProviderDashboard: React.FC = () => {
           />
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+              <h1 className="text-xl font-black tracking-tight text-slate-900 sm:text-2xl">
                 {user?.full_name}
               </h1>
               {profile?.is_verified ? (
@@ -280,27 +265,13 @@ export const ProviderDashboard: React.FC = () => {
             </p>
 
             <div className="flex items-center gap-3 mt-1.5 text-xs text-slate-500">
-              <span>Starts at: <strong className="text-slate-800">৳{profile?.starting_price} BDT</strong></span>
+              <span>Minimum starting rate: <strong className="text-slate-800">৳{profile?.starting_price} BDT</strong></span>
               <span>•</span>
               <span>⭐ {profile?.aggregate_rating ? profile.aggregate_rating.toFixed(1) : 'New'} ({profile?.total_reviews} reviews)</span>
             </div>
           </div>
         </div>
 
-        {/* Quick Earnings Snapshot Box */}
-        {ledgerData?.summary && (
-          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs w-full sm:w-auto">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
-              Available Payout Balance
-            </span>
-            <span className="text-2xl font-black text-emerald-700 block">
-              ৳{ledgerData.summary.available_payout.toFixed(2)} BDT
-            </span>
-            <span className="text-[11px] text-slate-500">
-              Net of {profile?.is_verified ? '12.5%' : 'global'} commission
-            </span>
-          </div>
-        )}
       </div>
 
       {actionSuccess && (
@@ -323,19 +294,6 @@ export const ProviderDashboard: React.FC = () => {
         >
           <Calendar className="w-4 h-4" />
           <span>Bookings & Jobs ({bookings.length})</span>
-        </button>
-
-        <button
-          id="tab-ledger"
-          onClick={() => setActiveTab('ledger')}
-          className={`py-3 px-3 border-b-2 transition whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
-            activeTab === 'ledger'
-              ? 'border-blue-600 text-blue-600'
-              : 'border-transparent text-slate-600 hover:text-slate-900'
-          }`}
-        >
-          <DollarSign className="w-4 h-4" />
-          <span>Earnings & Commission Ledger</span>
         </button>
 
         <button
@@ -386,7 +344,7 @@ export const ProviderDashboard: React.FC = () => {
               <Calendar className="w-12 h-12 text-slate-300 mx-auto mb-3" />
               <h3 className="text-base font-bold text-slate-800 mb-1">No service bookings yet</h3>
               <p className="text-xs text-slate-500">
-                When customers book your available slots, you can accept, manage, and complete jobs here.
+                When customers book your available slots, you can accept and start services here.
               </p>
             </div>
           ) : (
@@ -399,7 +357,14 @@ export const ProviderDashboard: React.FC = () => {
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-3 border-b border-slate-100">
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="text-sm font-bold text-slate-900">{b.customer_name || 'Customer'}</h3>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedCustomerBooking(b)}
+                        className="text-sm font-bold text-blue-700 hover:text-blue-900 hover:underline cursor-pointer"
+                        aria-label={`View ${b.customer_name || 'Customer'}'s profile`}
+                      >
+                        {b.customer_name || 'Customer'}
+                      </button>
                       <span className="font-mono text-xs text-slate-400">Ref: #{b.booking_reference}</span>
                       <span className="text-xs text-slate-600">Tel: {b.customer_phone}</span>
                     </div>
@@ -411,10 +376,6 @@ export const ProviderDashboard: React.FC = () => {
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <div className="text-right">
-                      <div className="text-[10px] text-slate-400 uppercase font-semibold">Service Fee</div>
-                      <div className="text-base font-black text-emerald-700">৳{b.agreed_price} BDT</div>
-                    </div>
                     <div>
                       <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200 uppercase">
                         {b.status.replace('_', ' ')}
@@ -432,11 +393,9 @@ export const ProviderDashboard: React.FC = () => {
                 {/* Status action buttons */}
                 <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
                   <div className="text-[11px] text-slate-500">
-                    {b.status === 'requested' && 'Customer requested this slot. Accept to allow customer payment.'}
-                    {b.status === 'accepted' && 'Waiting for customer to pay online into platform escrow.'}
-                    {b.status === 'paid_confirmed' && 'Customer paid! You may start the job when arriving.'}
-                    {b.status === 'in_progress' && 'Service in execution. Complete job to release payout.'}
-                    {b.status === 'completed' && 'Job successfully completed. Earnings credited to ledger.'}
+                    {b.status === 'requested' && 'Customer requested this slot. Accept to confirm the appointment.'}
+                    {b.status === 'accepted' && 'Appointment accepted. Agree service details and payment directly with the customer.'}
+                    {b.status === 'in_progress' && 'Service is in progress. Customer payment is handled directly between you.'}
                   </div>
 
                   <div className="flex items-center gap-2">
@@ -460,8 +419,8 @@ export const ProviderDashboard: React.FC = () => {
                       </>
                     )}
 
-                    {/* Paid Confirmed: Start Job */}
-                    {b.status === 'paid_confirmed' && (
+                    {/* Accepted: Start Service */}
+                    {b.status === 'accepted' && (
                       <button
                         id={`start-job-btn-${b.id}`}
                         onClick={() => handleUpdateBookingStatus(b.id, 'in_progress')}
@@ -472,130 +431,11 @@ export const ProviderDashboard: React.FC = () => {
                       </button>
                     )}
 
-                    {/* In Progress: Complete Job */}
-                    {b.status === 'in_progress' && (
-                      <button
-                        id={`complete-job-btn-${b.id}`}
-                        onClick={() => handleUpdateBookingStatus(b.id, 'completed')}
-                        className="px-4 py-1.5 rounded-xl bg-teal-600 text-white text-xs font-bold hover:bg-teal-700 shadow-xs transition cursor-pointer flex items-center gap-1"
-                      >
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>Mark as Completed</span>
-                      </button>
-                    )}
                   </div>
                 </div>
               </div>
             ))
           )}
-        </div>
-      )}
-
-      {/* Tab 2: Financial Ledger */}
-      {activeTab === 'ledger' && ledgerData && (
-        <div className="space-y-6">
-          {/* Summary Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider mb-1">
-                Gross Marketplace Value
-              </span>
-              <span className="text-xl font-black text-slate-900">
-                ৳{ledgerData.summary.total_gross.toFixed(2)}
-              </span>
-              <span className="text-[10px] text-slate-500 block mt-1">Total customer payments</span>
-            </div>
-
-            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider mb-1">
-                Platform Commission Deducted
-              </span>
-              <span className="text-xl font-black text-slate-600">
-                -৳{ledgerData.summary.total_commission_deducted.toFixed(2)}
-              </span>
-              <span className="text-[10px] text-slate-500 block mt-1">Automated revenue split</span>
-            </div>
-
-            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider mb-1">
-                Total Net Earnings
-              </span>
-              <span className="text-xl font-black text-blue-600">
-                ৳{ledgerData.summary.total_net_earnings.toFixed(2)}
-              </span>
-              <span className="text-[10px] text-slate-500 block mt-1">Lifetime earned</span>
-            </div>
-
-            <div className="bg-emerald-50/70 p-5 rounded-2xl border border-emerald-200 shadow-xs">
-              <span className="text-[10px] uppercase font-bold text-emerald-800 block tracking-wider mb-1">
-                Available for Payout
-              </span>
-              <span className="text-xl font-black text-emerald-800">
-                ৳{ledgerData.summary.available_payout.toFixed(2)}
-              </span>
-              <span className="text-[10px] text-emerald-700 block mt-1">Completed jobs escrow released</span>
-            </div>
-          </div>
-
-          {/* Itemized Transactions Table */}
-          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
-            <div className="p-4 border-b border-slate-200 font-bold text-xs text-slate-900">
-              Itemized Financial Transaction Ledger
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-semibold">
-                  <tr>
-                    <th className="py-3 px-4">Booking Ref</th>
-                    <th className="py-3 px-4">Customer</th>
-                    <th className="py-3 px-4">Gross Service</th>
-                    <th className="py-3 px-4">FixMate Fee (%)</th>
-                    <th className="py-3 px-4">Net Payout</th>
-                    <th className="py-3 px-4">Escrow Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {ledgerData.ledgers.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="py-8 text-center text-slate-400">
-                        No transactions recorded yet. Completed and paid jobs will automatically log splits here.
-                      </td>
-                    </tr>
-                  ) : (
-                    ledgerData.ledgers.map((item) => (
-                      <tr key={item.id} className="hover:bg-slate-50">
-                        <td className="py-3 px-4 font-mono font-medium text-slate-800">
-                          #{item.booking_reference}
-                        </td>
-                        <td className="py-3 px-4 text-slate-700">{item.customer_name || 'Customer'}</td>
-                        <td className="py-3 px-4 font-semibold text-slate-900">
-                          ৳{parseFloat(String(item.gross_amount)).toFixed(2)}
-                        </td>
-                        <td className="py-3 px-4 text-slate-500">
-                          -৳{parseFloat(String(item.platform_commission)).toFixed(2)} ({item.commission_percentage}%)
-                        </td>
-                        <td className="py-3 px-4 font-bold text-emerald-700">
-                          ৳{parseFloat(String(item.net_provider_payout)).toFixed(2)}
-                        </td>
-                        <td className="py-3 px-4">
-                          <span
-                            className={`px-2 py-0.5 rounded text-[11px] font-bold ${
-                              item.payout_status === 'eligible'
-                                ? 'bg-emerald-100 text-emerald-800'
-                                : 'bg-amber-100 text-amber-800'
-                            }`}
-                          >
-                            {item.payout_status === 'eligible' ? 'Released / Available' : 'Escrow Held'}
-                          </span>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
         </div>
       )}
 
@@ -852,7 +692,7 @@ export const ProviderDashboard: React.FC = () => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                  Starting Price (BDT)
+                  Minimum Starting Rate (BDT)
                 </label>
                 <input
                   id="edit-price-input"
@@ -962,6 +802,67 @@ export const ProviderDashboard: React.FC = () => {
                       </button>
                     </div>
                   ))}
+                </div>
+              )}
+
+              {selectedCustomerBooking && (
+                <div
+                  className="fixed inset-0 z-[1100] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs"
+                  onClick={() => setSelectedCustomerBooking(null)}
+                >
+                  <section
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="booking-customer-profile-title"
+                    className="w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    <div className="flex items-center justify-between border-b border-slate-100 p-5">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={selectedCustomerBooking.customer_avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'}
+                          alt=""
+                          className="h-12 w-12 rounded-xl object-cover ring-1 ring-slate-200"
+                        />
+                        <div>
+                          <h2 id="booking-customer-profile-title" className="text-lg font-bold text-slate-900">
+                            {selectedCustomerBooking.customer_name || 'Customer'}
+                          </h2>
+                          <p className="text-xs capitalize text-slate-500">Customer profile</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedCustomerBooking(null)}
+                        aria-label="Close customer profile"
+                        className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                      >
+                        <X className="h-5 w-5" />
+                      </button>
+                    </div>
+                    <dl className="grid grid-cols-1 gap-4 p-5 text-sm">
+                      <div>
+                        <dt className="text-xs text-slate-500">Email</dt>
+                        <dd className="break-all font-semibold text-slate-900">
+                          {selectedCustomerBooking.customer_email || 'Not provided'}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-xs text-slate-500">Phone</dt>
+                        <dd className="font-semibold text-slate-900">
+                          {selectedCustomerBooking.customer_contact || selectedCustomerBooking.customer_phone || 'Not provided'}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-xs text-slate-500">Customer since</dt>
+                        <dd className="font-semibold text-slate-900">
+                          {selectedCustomerBooking.customer_account_created_at
+                            ? new Date(selectedCustomerBooking.customer_account_created_at).toLocaleDateString()
+                            : '—'}
+                        </dd>
+                      </div>
+                    </dl>
+                  </section>
                 </div>
               )}
             </div>

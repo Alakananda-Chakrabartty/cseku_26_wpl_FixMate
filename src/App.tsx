@@ -9,6 +9,7 @@ import { ProviderDashboard } from './components/ProviderDashboard.tsx';
 import { AdminPanel } from './components/AdminPanel.tsx';
 import { AuthModal } from './components/AuthModal.tsx';
 import { ProviderProfile } from './types.ts';
+import { api } from './services/api.ts';
 import { ShieldCheck, Wrench, Heart, CheckCircle2 } from 'lucide-react';
 
 function FixMateMain() {
@@ -42,6 +43,15 @@ function FixMateMain() {
     }
   };
 
+  const handleViewProvider = async (providerId: number) => {
+    try {
+      const { provider } = await api.getProviderDetails(providerId);
+      setSelectedProviderDetail(provider);
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : 'Could not load provider profile.');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
       {/* Navbar */}
@@ -69,7 +79,10 @@ function FixMateMain() {
         )}
 
         {currentView === 'dashboard' && (
-          <CustomerDashboard onExploreMore={() => handleNavigate('search')} />
+          <CustomerDashboard
+            onExploreMore={() => handleNavigate('search')}
+            onViewProvider={handleViewProvider}
+          />
         )}
 
         {currentView === 'provider-dashboard' && <ProviderDashboard />}
@@ -168,7 +181,7 @@ function FixMateMain() {
 
           <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-400">
             <div>
-              © {new Date().getFullYear()} FixMate. Automated platform commission, proximity matching, and escrow protection.
+              © {new Date().getFullYear()} FixMate. Local services, trusted providers, and simple bookings.
             </div>
             <div className="flex items-center gap-1.5">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />

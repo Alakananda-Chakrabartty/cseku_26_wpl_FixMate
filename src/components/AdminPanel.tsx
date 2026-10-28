@@ -4,56 +4,49 @@ import {
   Users,
   CheckCircle2,
   XCircle,
-  TrendingUp,
-  DollarSign,
-  Percent,
   FileCheck,
   AlertCircle,
   FileText,
   Calendar,
+  DollarSign,
   Layers,
-  Settings,
   RefreshCw,
   Trash2,
   MailCheck,
+  X,
 } from 'lucide-react';
-import { AdminAnalytics, AdminUser, VerificationDocument, TransactionLedger, ProviderSubscriptionReview } from '../types.ts';
+import { AdminAnalytics, AdminUser, VerificationDocument, ProviderSubscriptionReview } from '../types.ts';
 import { api } from '../services/api.ts';
 
 export const AdminPanel: React.FC = () => {
   const [analytics, setAnalytics] = useState<AdminAnalytics | null>(null);
   const [verifications, setVerifications] = useState<VerificationDocument[]>([]);
-  const [transactions, setTransactions] = useState<TransactionLedger[]>([]);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [subscriptions, setSubscriptions] = useState<ProviderSubscriptionReview[]>([]);
-  const [activeTab, setActiveTab] = useState<'verifications' | 'analytics' | 'settings' | 'transactions' | 'users' | 'subscriptions'>(
+  const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
+  const [activeTab, setActiveTab] = useState<'verifications' | 'analytics' | 'users' | 'subscriptions'>(
     'verifications'
   );
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [commissionInput, setCommissionInput] = useState<number>(12.5);
-  const [isUpdatingCommission, setIsUpdatingCommission] = useState<boolean>(false);
   const [feedbackMessage, setFeedbackMessage] = useState<string>('');
+  const [deletingUserId, setDeletingUserId] = useState<number | null>(null);
+  const [reviewingProviderId, setReviewingProviderId] = useState<number | null>(null);
 
   const loadAdminData = async () => {
     setIsLoading(true);
     try {
-      const [ana, ver, tx, accountUsers, providerSubscriptions] = await Promise.all([
+      const [ana, ver, accountUsers, providerSubscriptions] = await Promise.all([
         api.getAdminAnalytics(),
         api.getAdminVerificationQueue(),
-        api.getAdminTransactions(),
         api.getAdminUsers(),
         api.getAdminSubscriptions(),
       ]);
 
       setAnalytics(ana);
       setVerifications(ver);
-      setTransactions(tx);
       setUsers(accountUsers);
       setSubscriptions(providerSubscriptions);
-      if (ana.current_commission_percentage) {
-        setCommissionInput(ana.current_commission_percentage);
-      }
     } catch (err) {
       console.error('Failed to load admin data:', err);
     } finally {
@@ -63,6 +56,7 @@ export const AdminPanel: React.FC = () => {
 
   const handleDeleteUser = async (account: AdminUser) => {
     if (!window.confirm(`Delete the account for ${account.full_name}? This cannot be undone.`)) return;
+    setDeletingUserId(account.id);
     try {
       await api.deleteAdminUser(account.id);
       setFeedbackMessage(`Account for ${account.full_name} deleted.`);
@@ -70,6 +64,8 @@ export const AdminPanel: React.FC = () => {
       await loadAdminData();
     } catch (err: any) {
       alert(err.message || 'Failed to delete account.');
+    } finally {
+      setDeletingUserId(null);
     }
   };
 
@@ -92,22 +88,9 @@ export const AdminPanel: React.FC = () => {
     }
   };
 
-  const handleSaveCommission = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsUpdatingCommission(true);
-    try {
-      await api.updateAdminSettings({ global_commission_percentage: commissionInput });
-      setFeedbackMessage(`Global platform commission updated to ${commissionInput}%.`);
-      setTimeout(() => setFeedbackMessage(''), 4000);
-      await loadAdminData();
-    } catch (err: any) {
-      alert(err.message || 'Failed to update settings.');
-    } finally {
-      setIsUpdatingCommission(false);
-    }
-  };
-
   const handleReviewSubscription = async (providerId: number, status: 'approved' | 'rejected', notes?: string) => {
+    if (reviewingProviderId !== null) return;
+    setReviewingProviderId(providerId);
     try {
       await api.reviewProviderSubscription(providerId, { status, notes });
       setFeedbackMessage(`Provider subscription marked as ${status}.`);
@@ -115,22 +98,24 @@ export const AdminPanel: React.FC = () => {
       await loadAdminData();
     } catch (err: any) {
       alert(err.message || 'Failed to update subscription status.');
+    } finally {
+      setReviewingProviderId(null);
     }
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="mx-auto max-w-6xl px-3 py-5 sm:px-6 sm:py-8 lg:px-8">
       {/* Top Banner */}
-      <div className="bg-purple-950 text-white rounded-3xl p-6 sm:p-8 shadow-xl mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="mb-6 flex flex-col items-start justify-between gap-4 rounded-3xl bg-purple-950 p-4 text-white shadow-xl sm:mb-8 sm:flex-row sm:items-center sm:p-8">
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="p-1 rounded-lg bg-purple-800 text-purple-200">
               <ShieldCheck className="w-5 h-5" />
             </span>
-            <h1 className="text-2xl font-black tracking-tight">FixMate Administration Engine</h1>
+            <h1 className="text-xl font-black tracking-tight sm:text-2xl">FixMate Administration Engine</h1>
           </div>
           <p className="text-xs text-purple-200 mt-1">
-            Oversee provider vetting, platform revenue splits, and marketplace telemetry.
+            Manage provider verification, monthly subscriptions, and marketplace accounts.
           </p>
         </div>
 
@@ -155,37 +140,35 @@ export const AdminPanel: React.FC = () => {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
             <div className="flex items-center justify-between text-slate-400 mb-1">
-              <span className="text-[10px] uppercase font-bold tracking-wider">Gross Volume (GMV)</span>
-              <DollarSign className="w-4 h-4 text-slate-500" />
+              <span className="text-[10px] uppercase font-bold tracking-wider">Customer Accounts</span>
+              <Users className="w-4 h-4 text-slate-500" />
             </div>
             <div className="text-2xl font-black text-slate-900">
-              ৳{analytics.finance.total_gmv.toFixed(2)}
+              {analytics.users_by_role.find((entry) => entry.role === 'customer')?.count || 0}
             </div>
-            <span className="text-[11px] text-slate-500">Gross marketplace payments</span>
+            <span className="text-[11px] text-slate-500">Registered customers</span>
           </div>
 
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
             <div className="flex items-center justify-between text-slate-400 mb-1">
-              <span className="text-[10px] uppercase font-bold tracking-wider">FixMate Revenue</span>
-              <TrendingUp className="w-4 h-4 text-purple-600" />
+              <span className="text-[10px] uppercase font-bold tracking-wider">Providers</span>
+              <Users className="w-4 h-4 text-purple-600" />
             </div>
             <div className="text-2xl font-black text-purple-600">
-              ৳{analytics.finance.total_commission.toFixed(2)}
+              {analytics.users_by_role.find((entry) => entry.role === 'provider')?.count || 0}
             </div>
-            <span className="text-[11px] text-purple-700 font-medium">
-              At {analytics.current_commission_percentage}% take rate
-            </span>
+            <span className="text-[11px] text-purple-700 font-medium">Registered service providers</span>
           </div>
 
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
             <div className="flex items-center justify-between text-slate-400 mb-1">
-              <span className="text-[10px] uppercase font-bold tracking-wider">Net Provider Payouts</span>
-              <Users className="w-4 h-4 text-emerald-600" />
+              <span className="text-[10px] uppercase font-bold tracking-wider">Bookings</span>
+              <Calendar className="w-4 h-4 text-emerald-600" />
             </div>
             <div className="text-2xl font-black text-emerald-700">
-              ৳{analytics.finance.total_provider_payouts.toFixed(2)}
+              {analytics.bookings_by_status.reduce((total, item) => total + Number(item.count), 0)}
             </div>
-            <span className="text-[11px] text-slate-500">Credited to local service providers</span>
+            <span className="text-[11px] text-slate-500">Total service requests</span>
           </div>
 
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
@@ -204,11 +187,11 @@ export const AdminPanel: React.FC = () => {
       )}
 
       {/* Tabs */}
-      <div className="flex items-center border-b border-slate-200 mb-6 gap-3 text-xs sm:text-sm font-bold">
+      <div className="-mx-3 mb-5 flex items-center gap-1 overflow-x-auto border-b border-slate-200 px-3 text-xs font-bold sm:mx-0 sm:mb-6 sm:gap-3 sm:px-0 sm:text-sm">
         <button
           id="admin-tab-verifications"
           onClick={() => setActiveTab('verifications')}
-          className={`py-3 px-3 border-b-2 transition cursor-pointer flex items-center gap-1.5 ${
+          className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-2.5 py-3 transition cursor-pointer sm:px-3 ${
             activeTab === 'verifications'
               ? 'border-purple-600 text-purple-600'
               : 'border-transparent text-slate-600 hover:text-slate-900'
@@ -221,7 +204,7 @@ export const AdminPanel: React.FC = () => {
         <button
           id="admin-tab-analytics"
           onClick={() => setActiveTab('analytics')}
-          className={`py-3 px-3 border-b-2 transition cursor-pointer flex items-center gap-1.5 ${
+          className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-2.5 py-3 transition cursor-pointer sm:px-3 ${
             activeTab === 'analytics'
               ? 'border-purple-600 text-purple-600'
               : 'border-transparent text-slate-600 hover:text-slate-900'
@@ -232,22 +215,9 @@ export const AdminPanel: React.FC = () => {
         </button>
 
         <button
-          id="admin-tab-transactions"
-          onClick={() => setActiveTab('transactions')}
-          className={`py-3 px-3 border-b-2 transition cursor-pointer flex items-center gap-1.5 ${
-            activeTab === 'transactions'
-              ? 'border-purple-600 text-purple-600'
-              : 'border-transparent text-slate-600 hover:text-slate-900'
-          }`}
-        >
-          <DollarSign className="w-4 h-4" />
-          <span>Transactions Audit ({transactions.length})</span>
-        </button>
-
-        <button
           id="admin-tab-users"
           onClick={() => setActiveTab('users')}
-          className={`py-3 px-3 border-b-2 transition cursor-pointer flex items-center gap-1.5 ${
+          className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-2.5 py-3 transition cursor-pointer sm:px-3 ${
             activeTab === 'users'
               ? 'border-purple-600 text-purple-600'
               : 'border-transparent text-slate-600 hover:text-slate-900'
@@ -260,7 +230,7 @@ export const AdminPanel: React.FC = () => {
         <button
           id="admin-tab-subscriptions"
           onClick={() => setActiveTab('subscriptions')}
-          className={`py-3 px-3 border-b-2 transition cursor-pointer flex items-center gap-1.5 ${
+          className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-2.5 py-3 transition cursor-pointer sm:px-3 ${
             activeTab === 'subscriptions'
               ? 'border-purple-600 text-purple-600'
               : 'border-transparent text-slate-600 hover:text-slate-900'
@@ -270,26 +240,14 @@ export const AdminPanel: React.FC = () => {
           <span>Subscriptions ({subscriptions.length})</span>
         </button>
 
-        <button
-          id="admin-tab-settings"
-          onClick={() => setActiveTab('settings')}
-          className={`py-3 px-3 border-b-2 transition cursor-pointer flex items-center gap-1.5 ${
-            activeTab === 'settings'
-              ? 'border-purple-600 text-purple-600'
-              : 'border-transparent text-slate-600 hover:text-slate-900'
-          }`}
-        >
-          <Settings className="w-4 h-4" />
-          <span>Commission Settings</span>
-        </button>
       </div>
 
       {activeTab === 'subscriptions' && (
         <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
           <div className="p-4 border-b border-slate-200 flex items-center justify-between gap-4">
             <div>
-              <h3 className="text-sm font-bold text-slate-900">Monthly Provider Subscription Approvals</h3>
-              <p className="text-xs text-slate-500 mt-1">Each provider must pay ৳500 through the official bKash or Nagad number and submit the transaction ID for local review.</p>
+              <h3 className="text-sm font-bold text-slate-900">Monthly Provider Subscription Payments</h3>
+              <p className="text-xs text-slate-500 mt-1">View submitted ৳500 bKash or Nagad payments and their transaction IDs. Pending payments appear first for review.</p>
             </div>
             <div className="text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-1">Official payment number: 01752786578</div>
           </div>
@@ -302,6 +260,7 @@ export const AdminPanel: React.FC = () => {
                   <th className="py-3 px-4">Category</th>
                   <th className="py-3 px-4">Wallet</th>
                   <th className="py-3 px-4">Transaction ID</th>
+                  <th className="py-3 px-4">Paid / approved</th>
                   <th className="py-3 px-4">Status</th>
                   <th className="py-3 px-4">Valid until</th>
                   <th className="py-3 px-4 text-right">Action</th>
@@ -310,21 +269,40 @@ export const AdminPanel: React.FC = () => {
               <tbody className="divide-y divide-slate-100">
                 {subscriptions.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-8 text-center text-slate-400">
-                      No subscription submissions pending review.
+                    <td colSpan={8} className="py-8 text-center text-slate-400">
+                      No provider subscription payments have been submitted.
                     </td>
                   </tr>
                 ) : (
                   subscriptions.map((sub) => (
                     <tr key={`${sub.provider_id}-${sub.subscription_transaction_id}`} className="hover:bg-slate-50">
                       <td className="py-3 px-4">
-                        <div className="font-semibold text-slate-900">{sub.provider_name}</div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const account = users.find((candidate) => candidate.id === sub.user_id);
+                            if (account) {
+                              setSelectedUser(account);
+                            } else {
+                              window.alert('Could not load this provider account. Refresh the admin data and try again.');
+                            }
+                          }}
+                          className="text-left font-semibold text-blue-700 hover:text-blue-900 hover:underline cursor-pointer"
+                          aria-label={`View ${sub.provider_name}'s profile`}
+                        >
+                          {sub.provider_name}
+                        </button>
                         <div className="text-[11px] text-slate-500">{sub.provider_email}</div>
                         {sub.provider_phone && <div className="text-[11px] text-slate-500">{sub.provider_phone}</div>}
                       </td>
                       <td className="py-3 px-4 text-slate-700">{sub.category_name || 'General'}</td>
                       <td className="py-3 px-4 font-semibold text-slate-800">{sub.subscription_method || '—'}</td>
                       <td className="py-3 px-4 font-mono text-slate-700">{sub.subscription_transaction_id || '—'}</td>
+                      <td className="py-3 px-4 text-slate-600">
+                        {sub.subscription_paid_at
+                          ? new Date(sub.subscription_paid_at).toLocaleDateString()
+                          : '—'}
+                      </td>
                       <td className="py-3 px-4">
                         <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${
                           sub.subscription_status === 'paid'
@@ -342,22 +320,28 @@ export const AdminPanel: React.FC = () => {
                           : '—'}
                       </td>
                       <td className="py-3 px-4 text-right">
-                        <div className="flex justify-end gap-2">
-                          <button
-                            type="button"
-                            onClick={() => handleReviewSubscription(sub.provider_id, 'rejected', 'Subscription payment transaction could not be verified locally.')}
-                            className="rounded-lg border border-rose-200 px-3 py-1.5 text-rose-600 font-bold hover:bg-rose-50 transition cursor-pointer"
-                          >
-                            Reject
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleReviewSubscription(sub.provider_id, 'approved', 'Monthly subscription verified by admin.')}
-                            className="rounded-lg bg-emerald-600 px-3 py-1.5 text-white font-bold hover:bg-emerald-700 transition cursor-pointer"
-                          >
-                            Approve
-                          </button>
-                        </div>
+                        {sub.subscription_status === 'pending' ? (
+                          <div className="flex justify-end gap-2">
+                            <button
+                              type="button"
+                              disabled={reviewingProviderId !== null}
+                              onClick={() => handleReviewSubscription(sub.provider_id, 'rejected', 'Subscription payment transaction could not be verified locally.')}
+                              className="rounded-lg border border-rose-200 px-3 py-1.5 text-rose-600 font-bold hover:bg-rose-50 transition disabled:opacity-50 cursor-pointer"
+                            >
+                              {reviewingProviderId === sub.provider_id ? 'Updating...' : 'Reject'}
+                            </button>
+                            <button
+                              type="button"
+                              disabled={reviewingProviderId !== null}
+                              onClick={() => handleReviewSubscription(sub.provider_id, 'approved', 'Monthly subscription verified by admin.')}
+                              className="rounded-lg bg-emerald-600 px-3 py-1.5 text-white font-bold hover:bg-emerald-700 transition disabled:opacity-50 cursor-pointer"
+                            >
+                              {reviewingProviderId === sub.provider_id ? 'Updating...' : 'Approve'}
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="text-slate-400">Reviewed</span>
+                        )}
                       </td>
                     </tr>
                   ))
@@ -388,7 +372,16 @@ export const AdminPanel: React.FC = () => {
               <tbody className="divide-y divide-slate-100">
                 {users.map((account) => (
                   <tr key={account.id} className="hover:bg-slate-50">
-                    <td className="py-3 px-4 font-semibold text-slate-900">{account.full_name}</td>
+                    <td className="py-3 px-4 font-semibold">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedUser(account)}
+                        className="text-left text-blue-700 hover:text-blue-900 hover:underline cursor-pointer"
+                        aria-label={`View details for ${account.full_name}`}
+                      >
+                        {account.full_name}
+                      </button>
+                    </td>
                     <td className="py-3 px-4 text-slate-600">{account.email}</td>
                     <td className="py-3 px-4 uppercase text-slate-600">{account.role}</td>
                     <td className="py-3 px-4">
@@ -401,10 +394,11 @@ export const AdminPanel: React.FC = () => {
                       {account.role !== 'admin' && (
                         <button
                           onClick={() => handleDeleteUser(account)}
-                          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-rose-200 text-rose-600 font-bold hover:bg-rose-50 transition cursor-pointer"
+                          disabled={deletingUserId !== null}
+                          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-rose-200 text-rose-600 font-bold hover:bg-rose-50 transition disabled:opacity-50 cursor-pointer"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
-                          Delete
+                          {deletingUserId === account.id ? 'Deleting...' : 'Delete'}
                         </button>
                       )}
                     </td>
@@ -413,6 +407,153 @@ export const AdminPanel: React.FC = () => {
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {selectedUser && (
+        <div
+          className="fixed inset-0 z-[1100] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs"
+          onClick={() => setSelectedUser(null)}
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="admin-user-details-title"
+            className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-slate-100 p-5">
+              <div>
+                <h2 id="admin-user-details-title" className="text-lg font-bold text-slate-900">
+                  Account Details
+                </h2>
+                <p className="mt-0.5 text-xs text-slate-500">User profile and account information</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedUser(null)}
+                aria-label="Close account details"
+                className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="space-y-5 p-5">
+              <div>
+                <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-500">Account</h3>
+                <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
+                  <div>
+                    <dt className="text-xs text-slate-500">Name</dt>
+                    <dd className="font-semibold text-slate-900">{selectedUser.full_name}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-slate-500">Role</dt>
+                    <dd className="font-semibold capitalize text-slate-900">{selectedUser.role}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-slate-500">Email</dt>
+                    <dd className="break-all font-semibold text-slate-900">{selectedUser.email}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-slate-500">Phone</dt>
+                    <dd className="font-semibold text-slate-900">{selectedUser.phone || 'Not provided'}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-slate-500">Email status</dt>
+                    <dd className="font-semibold text-slate-900">
+                      {selectedUser.email_verified ? 'Verified' : 'Not verified'}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-slate-500">Account created</dt>
+                    <dd className="font-semibold text-slate-900">
+                      {selectedUser.created_at ? new Date(selectedUser.created_at).toLocaleDateString() : '—'}
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+
+              {selectedUser.role === 'provider' && (
+                <div className="border-t border-slate-100 pt-4">
+                  <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-500">Provider Profile</h3>
+                  <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
+                    <div>
+                      <dt className="text-xs text-slate-500">Category</dt>
+                      <dd className="font-semibold text-slate-900">{selectedUser.provider_category || '—'}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-slate-500">Minimum starting rate</dt>
+                      <dd className="font-semibold text-slate-900">
+                        {selectedUser.provider_starting_price != null ? `৳${selectedUser.provider_starting_price}` : '—'}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-slate-500">Base location</dt>
+                      <dd className="font-semibold text-slate-900">{selectedUser.provider_base_location || '—'}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-slate-500">Experience</dt>
+                      <dd className="font-semibold text-slate-900">
+                        {selectedUser.provider_experience_years ?? 0} years
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-slate-500">Service areas</dt>
+                      <dd className="font-semibold text-slate-900">
+                        {selectedUser.provider_service_areas?.join(', ') || selectedUser.provider_service_area || '—'}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-slate-500">Verification</dt>
+                      <dd className="font-semibold capitalize text-slate-900">
+                        {selectedUser.provider_verification_status || '—'}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-slate-500">Subscription</dt>
+                      <dd className="font-semibold capitalize text-slate-900">
+                        {selectedUser.provider_subscription_status?.replace('_', ' ') || '—'}
+                      </dd>
+                    </div>
+                    {selectedUser.provider_subscription_method && (
+                      <div>
+                        <dt className="text-xs text-slate-500">Subscription payment</dt>
+                        <dd className="font-semibold text-slate-900">
+                          {selectedUser.provider_subscription_method}
+                          {selectedUser.provider_subscription_transaction_id
+                            ? ` · ${selectedUser.provider_subscription_transaction_id}`
+                            : ''}
+                        </dd>
+                      </div>
+                    )}
+                    {selectedUser.provider_subscription_paid_at && (
+                      <div>
+                        <dt className="text-xs text-slate-500">Subscription paid</dt>
+                        <dd className="font-semibold text-slate-900">
+                          {new Date(selectedUser.provider_subscription_paid_at).toLocaleDateString()}
+                        </dd>
+                      </div>
+                    )}
+                    {selectedUser.provider_subscription_expires_at && (
+                      <div>
+                        <dt className="text-xs text-slate-500">Subscription valid until</dt>
+                        <dd className="font-semibold text-slate-900">
+                          {new Date(selectedUser.provider_subscription_expires_at).toLocaleDateString()}
+                        </dd>
+                      </div>
+                    )}
+                    {selectedUser.provider_bio && (
+                      <div className="sm:col-span-2">
+                        <dt className="text-xs text-slate-500">Bio</dt>
+                        <dd className="whitespace-pre-wrap font-semibold text-slate-900">{selectedUser.provider_bio}</dd>
+                      </div>
+                    )}
+                  </dl>
+                </div>
+              )}
+            </div>
+          </section>
         </div>
       )}
 
@@ -583,123 +724,6 @@ export const AdminPanel: React.FC = () => {
         </div>
       )}
 
-      {/* Tab 3: Transactions Audit */}
-      {activeTab === 'transactions' && (
-        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
-          <div className="p-4 border-b border-slate-200 font-bold text-xs text-slate-900">
-            Global Marketplace Transaction Ledger & Splits
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-semibold">
-                <tr>
-                  <th className="py-3 px-4">Txn ID</th>
-                  <th className="py-3 px-4">Booking Ref</th>
-                  <th className="py-3 px-4">Provider</th>
-                  <th className="py-3 px-4">Gross Amount</th>
-                  <th className="py-3 px-4">FixMate Commission</th>
-                  <th className="py-3 px-4">Net Provider Payout</th>
-                  <th className="py-3 px-4">Method</th>
-                  <th className="py-3 px-4">Date</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {transactions.length === 0 ? (
-                  <tr>
-                    <td colSpan={8} className="py-8 text-center text-slate-400">
-                      No payments processed yet.
-                    </td>
-                  </tr>
-                ) : (
-                  transactions.map((t) => (
-                    <tr key={t.id} className="hover:bg-slate-50">
-                      <td className="py-3 px-4 font-mono text-slate-700">{t.transaction_id}</td>
-                      <td className="py-3 px-4 font-mono font-medium text-slate-900">
-                        #{t.booking_reference}
-                      </td>
-                      <td className="py-3 px-4 text-slate-800">{t.provider_name}</td>
-                      <td className="py-3 px-4 font-bold text-slate-900">
-                        ৳{parseFloat(String(t.gross_amount)).toFixed(2)}
-                      </td>
-                      <td className="py-3 px-4 text-purple-700 font-semibold">
-                        ৳{parseFloat(String(t.platform_commission)).toFixed(2)} ({t.commission_percentage}%)
-                      </td>
-                      <td className="py-3 px-4 text-emerald-700 font-bold">
-                        ৳{parseFloat(String(t.net_provider_payout)).toFixed(2)}
-                      </td>
-                      <td className="py-3 px-4 font-medium text-slate-600">{t.payment_method}</td>
-                      <td className="py-3 px-4 text-slate-400">
-                        {new Date(t.created_at).toLocaleDateString()}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* Tab 4: Commission Settings */}
-      {activeTab === 'settings' && (
-        <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs max-w-xl">
-          <h3 className="text-base font-bold text-slate-900 mb-1">
-            Global Platform Commission Configuration
-          </h3>
-          <p className="text-xs text-slate-500 mb-6">
-            Configure the percentage deducted automatically by the FixMate financial engine on every
-            successful customer checkout.
-          </p>
-
-          <form onSubmit={handleSaveCommission} className="space-y-4 text-xs">
-            <div>
-              <label className="block font-semibold text-slate-700 uppercase tracking-wider mb-2">
-                Platform Commission Take Rate (%)
-              </label>
-              <div className="relative">
-                <input
-                  id="commission-percentage-input"
-                  type="number"
-                  step="0.1"
-                  min="0"
-                  max="50"
-                  value={commissionInput}
-                  onChange={(e) => setCommissionInput(Number(e.target.value))}
-                  required
-                  className="w-full p-3 pl-4 pr-10 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                />
-                <Percent className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              </div>
-              <p className="text-[11px] text-slate-500 mt-1">
-                Standard industry baseline is 10.0% to 15.0%. Default: 12.5%.
-              </p>
-            </div>
-
-            <div className="p-4 bg-purple-50 rounded-2xl border border-purple-100 text-xs text-purple-900 space-y-1">
-              <strong className="block">Engine Impact:</strong>
-              <p>
-                A ৳1,000 BDT job under {commissionInput}% commission will automatically allocate{' '}
-                <strong className="text-purple-800">৳{((1000 * commissionInput) / 100).toFixed(2)}</strong> to
-                FixMate revenue and{' '}
-                <strong className="text-emerald-700">
-                  ৳{(1000 - (1000 * commissionInput) / 100).toFixed(2)}
-                </strong>{' '}
-                to the local provider payout balance.
-              </p>
-            </div>
-
-            <button
-              id="save-commission-btn"
-              type="submit"
-              disabled={isUpdatingCommission}
-              className="py-2.5 px-6 bg-purple-700 hover:bg-purple-800 text-white font-bold rounded-xl shadow-xs transition disabled:opacity-50 cursor-pointer"
-            >
-              {isUpdatingCommission ? 'Saving...' : 'Update Commission Rate'}
-            </button>
-          </form>
-        </div>
-      )}
     </div>
   );
 };

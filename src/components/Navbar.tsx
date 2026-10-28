@@ -1,14 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Wrench,
   ShieldCheck,
   Calendar,
-  DollarSign,
-  UserCheck,
   LogOut,
   LogIn,
   Search,
   Sliders,
+  Mail,
+  Menu,
+  X,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.tsx';
 import { ProfilePhotoMenu } from './ProfilePhotoMenu.tsx';
@@ -21,30 +22,42 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenAuth }) => {
   const { user, provider, isAuthenticated, logout } = useAuth();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const handleHelp = () => {
+    setIsMobileMenuOpen(false);
+    window.alert('If you face any issues, mail us at:\n\nchakrabarttyalakananda@gmail.com');
+  };
+
+  const handleMobileNavigate = (view: string) => {
+    setIsMobileMenuOpen(false);
+    onNavigate(view);
+  };
 
   return (
-    <header className="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-xs">
+    <header className="sticky top-0 z-40 border-b border-slate-200 bg-white shadow-xs">
       {/* Main Navbar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex h-14 items-center justify-between gap-2 sm:h-16">
           {/* Brand */}
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => onNavigate('search')}>
-            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
-              <Wrench className="w-5 h-5" />
+          <button
+            type="button"
+            className="flex min-w-0 items-center gap-2 sm:gap-3 cursor-pointer"
+            onClick={() => handleMobileNavigate('search')}
+          >
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-md shadow-blue-500/20 sm:h-10 sm:w-10">
+              <Wrench className="h-5 w-5" />
             </div>
-            <div>
+            <div className="min-w-0 text-left">
               <div className="flex items-center gap-1.5">
-                <span className="text-xl font-bold tracking-tight text-slate-900">FixMate</span>
-                <span className="bg-blue-100 text-blue-800 text-[10px] font-bold px-1.5 py-0.5 rounded tracking-wide uppercase">
-                  Hyper-Local
-                </span>
+                <span className="text-lg font-bold tracking-tight text-slate-900 sm:text-xl">FixMate</span>
               </div>
               <p className="text-xs text-slate-500 hidden md:block">Find a trusted service provider near you.</p>
             </div>
-          </div>
+          </button>
 
           {/* Nav Links */}
-          <nav className="flex items-center gap-1 sm:gap-2">
+          <nav className="hidden items-center gap-1 sm:gap-2 md:flex">
             <button
               id="nav-search-btn"
               onClick={() => onNavigate('search')}
@@ -84,7 +97,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenA
                 }`}
               >
                 <Sliders className="w-4 h-4" />
-                <span>Provider Hub & Ledger</span>
+                <span>Provider Hub</span>
                 {provider?.is_verified ? (
                   <ShieldCheck className="w-4 h-4 text-emerald-600 inline ml-1" />
                 ) : (
@@ -92,6 +105,17 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenA
                     Pending
                   </span>
                 )}
+              </button>
+            )}
+
+            {isAuthenticated && (user?.role === 'customer' || user?.role === 'provider') && (
+              <button
+                id="nav-help-btn"
+                onClick={handleHelp}
+                className="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition cursor-pointer flex items-center gap-1.5"
+              >
+                <Mail className="w-4 h-4" />
+                <span>Help</span>
               </button>
             )}
 
@@ -112,7 +136,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenA
           </nav>
 
           {/* User Section */}
-          <div className="flex items-center gap-3">
+          <div className="hidden items-center gap-3 md:flex">
             {isAuthenticated && user ? (
               <div className="flex items-center gap-3 pl-3 border-l border-slate-200">
                 <div className="flex items-center gap-2">
@@ -156,8 +180,107 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenA
               </div>
             )}
           </div>
+
+          <div className="flex items-center gap-1.5 md:hidden">
+            {isAuthenticated && user && <ProfilePhotoMenu size="sm" dropdownAlign="right" />}
+            <button
+              type="button"
+              aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              aria-expanded={isMobileMenuOpen}
+              onClick={() => setIsMobileMenuOpen((open) => !open)}
+              className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-700 hover:bg-slate-100"
+            >
+              {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+          </div>
         </div>
       </div>
+
+      {isMobileMenuOpen && (
+        <nav className="absolute left-0 right-0 top-full border-b border-slate-200 bg-white p-3 shadow-lg md:hidden">
+          <div className="mx-auto flex max-w-7xl flex-col gap-1">
+            <button
+              type="button"
+              onClick={() => handleMobileNavigate('search')}
+              className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-left text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            >
+              <Search className="h-4 w-4" /> Explore Providers
+            </button>
+            {isAuthenticated && user?.role === 'customer' && (
+              <button
+                type="button"
+                onClick={() => handleMobileNavigate('dashboard')}
+                className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-left text-sm font-semibold text-slate-700 hover:bg-slate-50"
+              >
+                <Calendar className="h-4 w-4" /> My Bookings
+              </button>
+            )}
+            {isAuthenticated && user?.role === 'provider' && (
+              <button
+                type="button"
+                onClick={() => handleMobileNavigate('provider-dashboard')}
+                className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-left text-sm font-semibold text-slate-700 hover:bg-slate-50"
+              >
+                <Sliders className="h-4 w-4" /> Provider Hub
+                {!provider?.is_verified && <span className="ml-auto text-xs text-amber-700">Pending</span>}
+              </button>
+            )}
+            {isAuthenticated && (user?.role === 'customer' || user?.role === 'provider') && (
+              <button
+                type="button"
+                onClick={handleHelp}
+                className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-left text-sm font-semibold text-slate-700 hover:bg-slate-50"
+              >
+                <Mail className="h-4 w-4" /> Help
+              </button>
+            )}
+            {isAuthenticated && user?.role === 'admin' && (
+              <button
+                type="button"
+                onClick={() => handleMobileNavigate('admin')}
+                className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-left text-sm font-semibold text-slate-700 hover:bg-slate-50"
+              >
+                <ShieldCheck className="h-4 w-4" /> Admin Panel
+              </button>
+            )}
+            {isAuthenticated ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  logout();
+                }}
+                className="mt-1 flex min-h-11 items-center gap-3 rounded-xl border-t border-slate-100 px-3 pt-2 text-left text-sm font-semibold text-rose-700"
+              >
+                <LogOut className="h-4 w-4" /> Log out
+              </button>
+            ) : (
+              <div className="mt-2 grid grid-cols-2 gap-2 border-t border-slate-100 pt-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    onOpenAuth('login');
+                  }}
+                  className="min-h-11 rounded-xl border border-slate-200 px-3 text-sm font-semibold text-slate-700"
+                >
+                  Sign in
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    onOpenAuth('register');
+                  }}
+                  className="min-h-11 rounded-xl bg-blue-600 px-3 text-sm font-semibold text-white"
+                >
+                  Register
+                </button>
+              </div>
+            )}
+          </div>
+        </nav>
+      )}
     </header>
   );
 };

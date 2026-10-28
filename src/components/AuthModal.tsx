@@ -115,7 +115,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+    <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
       <div className="bg-white rounded-3xl max-w-md w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
@@ -291,7 +291,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   <ServiceAreasEditor value={serviceAreas} onChange={setServiceAreas} />
                   <div>
                     <label className="block font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                      Starting Price (BDT)
+                      Minimum Starting Rate (BDT)
                     </label>
                     <input
                       type="number"

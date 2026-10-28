@@ -8,7 +8,6 @@ import {
   FileText,
   AlertCircle,
   CheckCircle2,
-  Lock,
 } from 'lucide-react';
 import { ProviderProfile } from '../types.ts';
 import { api } from '../services/api.ts';
@@ -220,7 +219,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               })}
             </div>
             <p className="text-[11px] text-slate-400 mt-1.5">
-              * Slots marked <span className="text-rose-500 font-semibold">Reserved</span> are blocked by confirmed bookings.
+              * Slots marked <span className="text-rose-500 font-semibold">Reserved</span> are already booked.
             </p>
           </div>
 
@@ -283,12 +282,12 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           {/* Summary & Price Box */}
           <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between text-xs">
             <div>
-              <span className="text-slate-500">Agreed Starting Fee:</span>
+              <span className="text-slate-500">Provider&apos;s Minimum Starting Rate:</span>
               <div className="font-extrabold text-base text-emerald-700">৳{provider.starting_price} BDT</div>
             </div>
             <div className="text-right text-[11px] text-slate-400">
-              <p>Payment required after provider accepts</p>
-              <p className="text-blue-600 font-medium">State: Requested → Accepted → Paid</p>
+              <p>Final service price is agreed directly with the provider.</p>
+              <p className="text-blue-600 font-medium">State: Requested → Accepted → In Progress</p>
             </div>
           </div>
 

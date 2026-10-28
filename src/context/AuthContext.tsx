@@ -108,11 +108,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     try {
       const res = await api.register(data);
-      localStorage.setItem('fixmate_token', res.token);
-      setToken(res.token);
-      setUser(res.user);
-      await refreshUser();
-      return res.redirectUrl;
+      if (res.token) {
+        localStorage.setItem('fixmate_token', res.token);
+        setToken(res.token);
+        if (res.user) {
+          setUser(res.user);
+        } else {
+          await refreshUser();
+        }
+      }
+      return res.redirectUrl || '';
     } finally {
       setIsLoading(false);
     }

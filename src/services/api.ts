@@ -1,10 +1,9 @@
+﻿import { Capacitor } from '@capacitor/core';
 import {
   User,
   Category,
   ProviderProfile,
   Booking,
-  TransactionLedger,
-  DigitalReceipt,
   Review,
   AdminAnalytics,
   VerificationDocument,
@@ -12,7 +11,9 @@ import {
   ProviderSubscriptionReview,
 } from '../types.ts';
 
-const API_BASE = import.meta.env.VITE_API_URL || '/api';
+const API_BASE = (Capacitor.getPlatform() === 'android' && import.meta.env.VITE_ANDROID_API_URL)
+  || import.meta.env.VITE_API_URL
+  || '/api';
 
 function getAuthHeader(): Record<string, string> {
   const token = localStorage.getItem('fixmate_token');
@@ -184,36 +185,6 @@ export const api = {
       body: JSON.stringify({ status, cancelled_reason }),
     }),
 
-  getReceipt: (id: number) => request<DigitalReceipt>(`/bookings/${id}/receipt`),
-
-  // Payments
-  checkoutPayment: (body: {
-    booking_id: number;
-    payment_method: 'SSLCommerz' | 'bKash' | 'Nagad';
-    account_number?: string;
-    notes?: string;
-  }) =>
-    request<{
-      message: string;
-      receipt: DigitalReceipt;
-      ledger: TransactionLedger;
-    }>('/payments/checkout', {
-      method: 'POST',
-      body: JSON.stringify(body),
-    }),
-
-  // Ledger
-  getProviderLedger: () =>
-    request<{
-      summary: {
-        total_gross: number;
-        total_commission_deducted: number;
-        total_net_earnings: number;
-        available_payout: number;
-      };
-      ledgers: TransactionLedger[];
-    }>('/ledger/provider'),
-
   // Reviews
   submitReview: (body: { booking_id: number; rating: number; comment?: string }) =>
     request<{ message: string; review: Review; provider_aggregate_rating: number }>('/reviews', {
@@ -240,18 +211,9 @@ export const api = {
       body: JSON.stringify({ status, admin_notes }),
     }),
 
-  getAdminSettings: () => request<Array<{ key: string; value: string; description: string }>>('/admin/settings'),
-
-  updateAdminSettings: (body: { global_commission_percentage: number }) =>
-    request<{ message: string; global_commission_percentage: number }>('/admin/settings', {
-      method: 'PUT',
-      body: JSON.stringify(body),
-    }),
-
-  getAdminTransactions: () => request<TransactionLedger[]>('/admin/transactions'),
-
   getAdminUsers: () => request<AdminUser[]>('/admin/users'),
 
   deleteAdminUser: (id: number) =>
     request<{ message: string }>(`/admin/users/${id}`, { method: 'DELETE' }),
 };
+

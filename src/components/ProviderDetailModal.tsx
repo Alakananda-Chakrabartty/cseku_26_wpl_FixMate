@@ -267,8 +267,9 @@ export const ProviderDetailModal: React.FC<ProviderDetailModalProps> = ({
         {/* Modal Footer with Book Slot trigger */}
         <div className="p-6 border-t border-slate-100 flex items-center justify-between bg-slate-50/50">
           <div>
-            <div className="text-[11px] text-slate-400 uppercase font-semibold">Starting Service Fee</div>
+            <div className="text-[11px] text-slate-400 uppercase font-semibold">Minimum Starting Rate</div>
             <div className="text-xl font-extrabold text-emerald-700">৳{provider.starting_price}</div>
+            <p className="mt-1 max-w-xs text-[10px] text-slate-500">Final price is agreed directly with the provider after they assess the issue.</p>
           </div>
 
           <div className="flex items-center gap-3">

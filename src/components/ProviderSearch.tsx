@@ -138,16 +138,21 @@ export const ProviderSearch: React.FC<ProviderSearchProps> = ({ onSelectProvider
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="mx-auto max-w-7xl px-3 py-5 sm:px-6 sm:py-8 lg:px-8">
       {/* Hero Search Header */}
-      <div className="bg-linear-to-r from-blue-700 via-blue-800 to-indigo-900 rounded-3xl p-6 sm:p-10 text-white shadow-xl mb-8 relative overflow-hidden">
+      <div className="relative mb-6 overflow-hidden rounded-3xl bg-linear-to-r from-blue-700 via-blue-800 to-indigo-900 p-4 text-white shadow-xl sm:mb-8 sm:p-10">
         <div className="relative z-10 max-w-3xl">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight mb-3">
+          <h1 className="mb-3 text-2xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl">
             Find a trusted service provider near you.
           </h1>
-          <p className="text-blue-100 text-base sm:text-lg mb-6 leading-relaxed">
-            Connect directly with verified electricians, plumbers, AC technicians, and tailors.
-            Real-time proximity calculations, secure online payment, and verified customer reviews.
+          <p className="mb-4 text-sm leading-relaxed text-blue-100 sm:mb-6 sm:text-lg">
+            <span className="sm:hidden">
+              Find verified local professionals, compare ratings and starting rates, and contact providers directly.
+            </span>
+            <span className="hidden sm:inline">
+              Connect directly with verified electricians, plumbers, AC technicians, and tailors.
+              Real-time proximity calculations, direct customer-provider payments, and verified customer reviews.
+            </span>
           </p>
 
           {/* Search Form Bar */}
@@ -157,7 +162,7 @@ export const ProviderSearch: React.FC<ProviderSearchProps> = ({ onSelectProvider
               <input
                 id="search-provider-input"
                 type="text"
-                placeholder="Search by skill, service or provider name..."
+                placeholder="Search service or provider..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-11 pr-9 py-3 bg-white rounded-xl text-slate-900 placeholder:text-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xs"
@@ -213,9 +218,9 @@ export const ProviderSearch: React.FC<ProviderSearchProps> = ({ onSelectProvider
       </div>
 
       {/* Category Pills Strip & Providers Target */}
-      <div id="providers-section" className="scroll-mt-20 mb-8">
+      <div id="providers-section" className="mb-6 scroll-mt-20 sm:mb-8">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-bold text-slate-900 tracking-tight">Popular Service Categories</h2>
+          <h2 className="text-base font-bold tracking-tight text-slate-900 sm:text-lg">Popular Service Categories</h2>
           {selectedCategory && (
             <button
               onClick={() => setSelectedCategory('')}
@@ -226,7 +231,7 @@ export const ProviderSearch: React.FC<ProviderSearchProps> = ({ onSelectProvider
           )}
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 md:grid-cols-5">
           {categories.map((cat) => {
             const isSelected = selectedCategory === cat.slug;
             return (
@@ -234,7 +239,7 @@ export const ProviderSearch: React.FC<ProviderSearchProps> = ({ onSelectProvider
                 key={cat.id}
                 id={`cat-filter-${cat.slug}`}
                 onClick={() => setSelectedCategory(isSelected ? '' : cat.slug)}
-                className={`p-3.5 rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between ${
+                className={`flex min-h-28 flex-col justify-between rounded-2xl border p-3 text-left transition cursor-pointer sm:min-h-32 sm:p-3.5 ${
                   isSelected
                     ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-600/20'
                     : 'bg-white border-slate-200 hover:border-blue-300 text-slate-800 hover:bg-slate-50'
@@ -359,7 +364,7 @@ export const ProviderSearch: React.FC<ProviderSearchProps> = ({ onSelectProvider
             <div className="mb-3">
               <div className="flex items-center justify-between mb-2">
                 <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                  Starting Price (BDT)
+                  Minimum Starting Rate (BDT)
                 </label>
                 <span className="text-xs font-bold text-slate-800">
                   ৳{priceRange[0]} - ৳{priceRange[1]}
@@ -540,7 +545,7 @@ export const ProviderSearch: React.FC<ProviderSearchProps> = ({ onSelectProvider
                         </div>
                       )}
                       <div className="flex items-center gap-1 text-emerald-700 font-bold">
-                        <span className="text-[10px] font-normal text-slate-500">Starts at</span>
+                        <span className="text-[10px] font-normal text-slate-500">Minimum rate</span>
                         <span>৳{provider.starting_price}</span>
                       </div>
                     </div>

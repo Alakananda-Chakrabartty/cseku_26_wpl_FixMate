@@ -4,36 +4,30 @@ import {
   Clock,
   MapPin,
   Phone,
-  ShieldCheck,
-  CreditCard,
-  Receipt,
   Star,
-  XCircle,
   AlertCircle,
-  ArrowRight,
   Sparkles,
 } from 'lucide-react';
-import { Booking, DigitalReceipt } from '../types.ts';
+import { Booking } from '../types.ts';
 import { api } from '../services/api.ts';
 import { useAuth } from '../context/AuthContext.tsx';
-import { PaymentModal } from './PaymentModal.tsx';
-import { DigitalReceiptModal } from './DigitalReceiptModal.tsx';
 import { ReviewModal } from './ReviewModal.tsx';
 
 interface CustomerDashboardProps {
   onExploreMore: () => void;
+  onViewProvider: (providerId: number) => void;
 }
 
-export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ onExploreMore }) => {
+export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ onExploreMore, onViewProvider }) => {
   const { user } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [filterTab, setFilterTab] = useState<'all' | 'active' | 'completed' | 'cancelled'>('all');
+  const [filterTab, setFilterTab] = useState<'all' | 'active' | 'cancelled'>('all');
 
   // Modal states
-  const [selectedBookingForPayment, setSelectedBookingForPayment] = useState<Booking | null>(null);
-  const [selectedReceipt, setSelectedReceipt] = useState<DigitalReceipt | null>(null);
   const [selectedBookingForReview, setSelectedBookingForReview] = useState<Booking | null>(null);
+  const today = new Date();
+  const todayIso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
   const loadBookings = async () => {
     setIsLoading(true);
@@ -63,21 +57,9 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ onExploreM
     }
   };
 
-  const handleViewReceipt = async (bookingId: number) => {
-    try {
-      const receipt = await api.getReceipt(bookingId);
-      setSelectedReceipt(receipt);
-    } catch (err: any) {
-      alert(err.message || 'Receipt could not be loaded.');
-    }
-  };
-
   const filteredBookings = bookings.filter((b) => {
     if (filterTab === 'active') {
-      return ['requested', 'accepted', 'paid_confirmed', 'in_progress'].includes(b.status);
-    }
-    if (filterTab === 'completed') {
-      return b.status === 'completed';
+      return ['requested', 'accepted', 'in_progress'].includes(b.status);
     }
     if (filterTab === 'cancelled') {
       return b.status === 'cancelled' || b.status === 'declined';
@@ -96,25 +78,13 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ onExploreM
       case 'accepted':
         return (
           <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">
-            ✓ Accepted - Payment Due
-          </span>
-        );
-      case 'paid_confirmed':
-        return (
-          <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-            🔒 Paid & Escrow Confirmed
+            ✓ Booking Accepted
           </span>
         );
       case 'in_progress':
         return (
           <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 animate-pulse">
             ⚡ Service in Progress
-          </span>
-        );
-      case 'completed':
-        return (
-          <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-teal-50 text-teal-700 border border-teal-200">
-            🎉 Completed & Released
           </span>
         );
       case 'declined':
@@ -135,12 +105,12 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ onExploreM
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="mx-auto max-w-6xl px-3 py-5 sm:px-6 sm:py-8 lg:px-8">
       {/* Top Welcome Bar */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="mb-6 flex flex-col items-start justify-between gap-4 rounded-3xl border border-slate-200 bg-white p-4 shadow-xs sm:mb-8 sm:flex-row sm:items-center sm:p-8">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">Customer Service Portal</h1>
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-xl font-black tracking-tight text-slate-900 sm:text-2xl">Customer Service Portal</h1>
             <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
               Active Session
             </span>
@@ -160,13 +130,13 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ onExploreM
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex items-center justify-between border-b border-slate-200 pb-3 mb-6">
-        <div className="flex gap-2">
-          {(['all', 'active', 'completed', 'cancelled'] as const).map((tab) => (
+      <div className="mb-5 flex items-center justify-between gap-2 border-b border-slate-200 pb-3 sm:mb-6">
+        <div className="flex min-w-0 gap-2 overflow-x-auto">
+          {(['all', 'active', 'cancelled'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setFilterTab(tab)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold capitalize transition cursor-pointer ${
+              className={`shrink-0 rounded-xl px-3 py-2 text-xs font-bold capitalize transition cursor-pointer sm:px-3.5 ${
                 filterTab === tab
                   ? 'bg-blue-600 text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
@@ -179,7 +149,7 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ onExploreM
 
         <button
           onClick={loadBookings}
-          className="text-xs text-blue-600 hover:text-blue-800 font-medium cursor-pointer"
+          className="shrink-0 py-2 text-xs font-medium text-blue-600 hover:text-blue-800 cursor-pointer"
         >
           ↻ Refresh List
         </button>
@@ -212,7 +182,7 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ onExploreM
             <div
               key={b.id}
               id={`customer-booking-${b.id}`}
-              className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs hover:border-blue-200 transition"
+              className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs transition hover:border-blue-200 sm:p-6"
             >
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-100">
                 {/* Provider info & Ref */}
@@ -224,7 +194,14 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ onExploreM
                   />
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="text-base font-bold text-slate-900">{b.provider_name}</h3>
+                      <button
+                        type="button"
+                        onClick={() => onViewProvider(b.provider_id)}
+                        className="text-base font-bold text-blue-700 hover:text-blue-900 hover:underline cursor-pointer"
+                        aria-label={`View ${b.provider_name}'s profile`}
+                      >
+                        {b.provider_name}
+                      </button>
                       <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
                         {b.category_name}
                       </span>
@@ -238,12 +215,12 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ onExploreM
                 </div>
 
                 {/* Status Badge & Price */}
-                <div className="flex items-center gap-3">
-                  <div className="text-right">
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-3 sm:justify-end sm:pt-0">
+                  <div className="text-left sm:text-right">
                     <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-semibold">
-                      Agreed Price
+                      Provider Minimum Starting Rate
                     </span>
-                    <span className="text-lg font-black text-emerald-700">৳{b.agreed_price} BDT</span>
+                    <span className="text-lg font-black text-emerald-700">৳{b.provider_starting_price} BDT</span>
                   </div>
                   <div>{getStatusBadge(b.status)}</div>
                 </div>
@@ -286,10 +263,8 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ onExploreM
                 {/* Left note */}
                 <div className="text-[11px] text-slate-500">
                   {b.status === 'requested' && 'Awaiting provider confirmation. You will be notified once accepted.'}
-                  {b.status === 'accepted' && 'Provider accepted your request! Please complete payment to confirm.'}
-                  {b.status === 'paid_confirmed' && 'Funds in platform escrow. Provider is scheduled to visit.'}
-                  {b.status === 'in_progress' && 'Provider is currently executing the service.'}
-                  {b.status === 'completed' && 'Service completed. Funds released to provider.'}
+                  {b.status === 'accepted' && 'Provider accepted your request. Arrange service payment directly with them.'}
+                  {b.status === 'in_progress' && 'Provider has started the service. Arrange payment directly with them.'}
                 </div>
 
                 {/* Action Buttons */}
@@ -304,32 +279,8 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ onExploreM
                     </button>
                   )}
 
-                  {/* Payment Checkout for accepted bookings */}
-                  {b.status === 'accepted' && (
-                    <button
-                      id={`pay-now-btn-${b.id}`}
-                      onClick={() => setSelectedBookingForPayment(b)}
-                      className="px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition cursor-pointer flex items-center gap-1.5"
-                    >
-                      <CreditCard className="w-3.5 h-3.5" />
-                      <span>Pay ৳{b.agreed_price} (Escrow Checkout)</span>
-                    </button>
-                  )}
-
-                  {/* Digital Receipt for paid/in_progress/completed */}
-                  {['paid_confirmed', 'in_progress', 'completed'].includes(b.status) && (
-                    <button
-                      id={`receipt-btn-${b.id}`}
-                      onClick={() => handleViewReceipt(b.id)}
-                      className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold transition cursor-pointer flex items-center gap-1.5"
-                    >
-                      <Receipt className="w-3.5 h-3.5 text-blue-600" />
-                      <span>View Receipt</span>
-                    </button>
-                  )}
-
-                  {/* Review Button for completed bookings */}
-                  {b.status === 'completed' && (
+                  {/* Ratings become available after the scheduled service date. */}
+                  {['accepted', 'in_progress'].includes(b.status) && b.booking_date.slice(0, 10) <= todayIso && (
                     b.user_rating ? (
                       <div className="flex items-center gap-1 text-xs font-bold text-slate-700 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200">
                         <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
@@ -351,27 +302,6 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ onExploreM
             </div>
           ))}
         </div>
-      )}
-
-      {/* Payment Modal */}
-      {selectedBookingForPayment && (
-        <PaymentModal
-          booking={selectedBookingForPayment}
-          onClose={() => setSelectedBookingForPayment(null)}
-          onPaymentSuccess={(receipt) => {
-            setSelectedBookingForPayment(null);
-            setSelectedReceipt(receipt);
-            loadBookings();
-          }}
-        />
-      )}
-
-      {/* Digital Receipt Modal */}
-      {selectedReceipt && (
-        <DigitalReceiptModal
-          receipt={selectedReceipt}
-          onClose={() => setSelectedReceipt(null)}
-        />
       )}
 
       {/* Review Modal */}
