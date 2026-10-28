@@ -1,3 +1,3 @@
-import { createApiApp } from '../../server/app.ts';
+import { createApiApp } from '../../server/app';
 
 export default createApiApp();

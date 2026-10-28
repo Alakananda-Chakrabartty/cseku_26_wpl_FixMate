@@ -3,8 +3,8 @@ import express from 'express';
 import path from 'path';
 import { createServer as createNetServer } from 'node:net';
 import { createServer as createViteServer } from 'vite';
-import { createApiApp } from './server/app.ts';
-import { getDb } from './server/db.ts';
+import { createApiApp } from './server/app';
+import { getDb } from './server/db';
 
 async function assertPortAvailable(port: number, label: string) {
   const probe = createNetServer();

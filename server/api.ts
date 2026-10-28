@@ -1,19 +1,19 @@
 import { Router, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
-import { getDb, calculateDistanceKm } from './db.ts';
-import { createEmailVerificationToken, sendVerificationEmail } from './email.ts';
+import { getDb, calculateDistanceKm } from './db';
+import { createEmailVerificationToken, sendVerificationEmail } from './email';
 import {
   SUBSCRIPTION_FEE_BDT,
   normalizeSubscriptionMethod,
   normalizeTransactionId,
-} from './subscription.ts';
+} from './subscription';
 import {
   authenticateToken,
   requireRole,
   generateToken,
   AuthenticatedRequest,
-} from './auth.ts';
+} from './auth';
 
 const router = Router();
 
