@@ -10,7 +10,7 @@
       }
     },
     {
-      "src": "api/[...path].ts",
+      "src": "api/index.ts",
       "use": "@vercel/node",
       "config": {
         "includeFiles": "schema.sql"
@@ -20,7 +20,7 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/api/[...path]"
+      "dest": "/api/index.ts"
     },
     {
       "handle": "filesystem"
