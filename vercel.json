@@ -10,17 +10,17 @@
       }
     },
     {
-      "src": "api/index.ts",
+      "src": "api/index.cjs",
       "use": "@vercel/node",
       "config": {
-        "includeFiles": "schema.sql"
+        "includeFiles": "{schema.sql,server/app.bundle.cjs}"
       }
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/api/index.ts"
+      "dest": "/api/index.cjs"
     },
     {
       "handle": "filesystem"

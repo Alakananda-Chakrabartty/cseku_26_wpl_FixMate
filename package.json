@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsx server.ts",
     "test": "node --import tsx --test test/*.test.ts",
-    "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=server-build/server.cjs",
+    "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=server-build/server.cjs && esbuild server/app.ts --bundle --platform=node --format=cjs --packages=external --outfile=server/app.bundle.cjs",
     "start": "node server-build/server.cjs",
     "preview": "vite preview",
     "android:sync": "vite build && cap sync android",
